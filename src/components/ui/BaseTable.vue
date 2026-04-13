@@ -21,7 +21,7 @@ defineProps({
 
 <template>
   <div class="overflow-x-auto">
-    <table class="w-full">
+    <table class="w-full table-fixed">
       <thead>
         <tr class="bg-[var(--bg-tertiary)]">
           <th
@@ -30,7 +30,9 @@ defineProps({
             class="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider first:rounded-tl-xl last:rounded-tr-xl"
             :style="col.width ? { width: col.width } : {}"
           >
-            {{ col.label }}
+            <slot :name="`header-${col.key}`" :column="col">
+              {{ col.label }}
+            </slot>
           </th>
         </tr>
       </thead>
