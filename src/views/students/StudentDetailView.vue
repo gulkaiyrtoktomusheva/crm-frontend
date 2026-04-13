@@ -1,0 +1,278 @@
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { studentsApi } from '@/api/students'
+import { useToast } from '@/composables/useToast'
+import StudentStatusBadge from '@/components/students/StudentStatusBadge.vue'
+import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseAvatar from '@/components/ui/BaseAvatar.vue'
+import BaseBadge from '@/components/ui/BaseBadge.vue'
+import BaseSkeleton from '@/components/ui/BaseSkeleton.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import {
+  ArrowLeft,
+  Phone,
+  MessageCircle,
+  MapPin,
+  GraduationCap,
+  Calendar,
+  User
+} from 'lucide-vue-next'
+
+const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
+const toast = useToast()
+
+const student = ref(null)
+const loading = ref(true)
+const activeTab = ref('attendance')
+
+const tabs = computed(() => [
+  { id: 'attendance', label: t('students.attendance') },
+  { id: 'scores', label: t('students.mockScores') },
+  { id: 'payments', label: t('students.payments') }
+])
+
+onMounted(async () => {
+  try {
+    student.value = await studentsApi.getById(route.params.id)
+  } catch (e) {
+    toast.error(t('students.failedLoadStudent'))
+    router.push('/students')
+  } finally {
+    loading.value = false
+  }
+})
+
+function formatDate(date) {
+  if (!date) return '-'
+  return new Date(date).toLocaleDateString('ru-RU')
+}
+
+function formatCurrency(amount) {
+  if (!amount) return '0'
+  return new Intl.NumberFormat('ru-RU').format(amount) + ' ' + t('common.currency')
+}
+
+const attendancePercent = computed(() => {
+  if (!student.value?.attendancePercentage) return 0
+  return Math.round(student.value.attendancePercentage)
+})
+</script>
+
+<template>
+  <div class="space-y-6">
+    <!-- Back button -->
+    <button
+      @click="router.push('/students')"
+      class="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors"
+    >
+      <ArrowLeft class="w-4 h-4" />
+      {{ t('students.backToStudents') }}
+    </button>
+
+    <!-- Loading state -->
+    <template v-if="loading">
+      <BaseCard>
+        <div class="flex items-start gap-6">
+          <BaseSkeleton width="5rem" height="5rem" rounded="rounded-full" />
+          <div class="flex-1 space-y-3">
+            <BaseSkeleton width="40%" height="1.5rem" />
+            <BaseSkeleton width="60%" height="1rem" />
+            <BaseSkeleton width="30%" height="1rem" />
+          </div>
+        </div>
+      </BaseCard>
+    </template>
+
+    <template v-else-if="student">
+      <!-- Student header -->
+      <BaseCard>
+        <div class="flex flex-col md:flex-row md:items-start gap-6">
+          <BaseAvatar :name="student.fullName" size="xl" />
+
+          <div class="flex-1">
+            <div class="flex items-start justify-between">
+              <div>
+                <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ student.fullName }}</h1>
+                <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-[var(--text-secondary)]">
+                  <span v-if="student.phone" class="flex items-center gap-1">
+                    <Phone class="w-4 h-4" /> {{ student.phone }}
+                  </span>
+                  <span v-if="student.school" class="flex items-center gap-1">
+                    <GraduationCap class="w-4 h-4" /> {{ student.school }}
+                  </span>
+                  <span v-if="student.city" class="flex items-center gap-1">
+                    <MapPin class="w-4 h-4" /> {{ student.city }}
+                  </span>
+                </div>
+              </div>
+              <StudentStatusBadge :status="student.status" />
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-[var(--text-secondary)]">
+              <span v-if="student.parentName" class="flex items-center gap-1">
+                <User class="w-4 h-4" /> {{ student.parentName }} ({{ student.parentPhone }})
+              </span>
+              <span v-if="student.ortDate" class="flex items-center gap-1">
+                <Calendar class="w-4 h-4" /> ORT: {{ formatDate(student.ortDate) }}
+              </span>
+              <span v-if="student.grade">{{ t('common.grade') }}: {{ student.grade }}</span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-4">
+              <BaseBadge v-for="subject in student.subjects" :key="subject.id" variant="purple">
+                {{ subject.name }}
+              </BaseBadge>
+            </div>
+          </div>
+        </div>
+      </BaseCard>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <BaseCard>
+          <p class="text-sm text-[var(--text-secondary)]">{{ t('students.attendance') }}</p>
+          <p class="text-2xl font-bold text-[var(--text-primary)] mt-1">{{ attendancePercent }}%</p>
+          <div class="mt-2 h-2 bg-white/5 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-accent transition-all"
+              :style="{ width: `${attendancePercent}%` }"
+            />
+          </div>
+        </BaseCard>
+
+        <BaseCard>
+          <p class="text-sm text-[var(--text-secondary)]">{{ t('students.lessons') }}</p>
+          <p class="text-2xl font-bold text-[var(--text-primary)] mt-1">
+            {{ student.attendedLessons || 0 }} / {{ student.totalLessons || 0 }}
+          </p>
+        </BaseCard>
+
+        <BaseCard>
+          <p class="text-sm text-[var(--text-secondary)]">{{ t('students.avgMockScore') }}</p>
+          <p class="text-2xl font-bold text-[var(--text-primary)] mt-1">
+            {{ student.averageMockScore ? Math.round(student.averageMockScore) : '-' }}
+          </p>
+        </BaseCard>
+
+        <BaseCard>
+          <p class="text-sm text-[var(--text-secondary)]">{{ t('students.balance') }}</p>
+          <p :class=" [
+            'text-2xl font-bold mt-1',
+            student.balance > 0 ? 'text-red-400' : 'text-emerald-400'
+          ]">
+            {{ formatCurrency(student.balance) }}
+          </p>
+        </BaseCard>
+      </div>
+
+      <!-- Tabs -->
+      <BaseCard padding="none">
+        <div class="flex border-b border-white/5">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="activeTab = tab.id"
+            :class=" [
+              'px-6 py-4 text-sm font-medium transition-colors relative',
+              activeTab === tab.id
+                ? 'text-white'
+                : 'text-[var(--text-secondary)] hover:text-white'
+            ]"
+          >
+            {{ tab.label }}
+            <div
+              v-if="activeTab === tab.id"
+              class="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"
+            />
+          </button>
+        </div>
+
+        <div class="p-6">
+          <!-- Attendance tab -->
+          <div v-if="activeTab === 'attendance'">
+            <div v-if="student.groups?.length" class="space-y-4">
+              <div v-for="group in student.groups" :key="group.id" class="p-4 bg-white/5 rounded-xl">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <p class="font-medium text-[var(--text-primary)]">{{ group.name }}</p>
+                    <p class="text-sm text-[var(--text-secondary)]">{{ group.subjectName }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-[var(--text-secondary)] text-center py-8">
+              {{ t('students.noGroupsAssigned') }}
+            </p>
+          </div>
+
+          <!-- Scores tab -->
+          <div v-if="activeTab === 'scores'">
+            <div v-if="student.mockExamScores?.length" class="space-y-3">
+              <div
+                v-for="score in student.mockExamScores"
+                :key="score.id"
+                class="flex items-center justify-between p-4 bg-white/5 rounded-xl"
+              >
+                <div>
+                  <p class="font-medium text-[var(--text-primary)]">{{ score.mockExamTitle }}</p>
+                  <p class="text-sm text-[var(--text-secondary)]">
+                    {{ score.subjectName }} - {{ formatDate(score.examDate) }}
+                  </p>
+                </div>
+                <p class="text-xl font-bold text-accent">{{ score.score }}</p>
+              </div>
+            </div>
+            <p v-else class="text-[var(--text-secondary)] text-center py-8">
+              {{ t('students.noMockScores') }}
+            </p>
+          </div>
+
+          <!-- Payments tab -->
+          <div v-if="activeTab === 'payments'">
+            <div class="mb-4 p-4 bg-white/5 rounded-xl">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm text-[var(--text-secondary)]">{{ t('students.totalPaid') }}</p>
+                  <p class="text-xl font-bold text-emerald-400">{{ formatCurrency(student.totalPaid) }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm text-[var(--text-secondary)]">{{ t('students.totalDue') }}</p>
+                  <p class="text-xl font-bold text-[var(--text-primary)]">{{ formatCurrency(student.totalDue) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="student.payments?.length" class="space-y-3">
+              <div
+                v-for="payment in student.payments"
+                :key="payment.id"
+                class="flex items-center justify-between p-4 bg-white/5 rounded-xl"
+              >
+                <div>
+                  <p class="font-medium text-[var(--text-primary)]">
+                    {{ t('payments.payment') }} {{ payment.installmentNumber }}/{{ payment.totalInstallments }}
+                  </p>
+                  <p class="text-sm text-[var(--text-secondary)]">
+                    {{ t('payments.dueDate') }}: {{ formatDate(payment.dueDate) }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-[var(--text-primary)]">{{ formatCurrency(payment.amount) }}</p>
+                  <PaymentStatusBadge :status="payment.status" />
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-[var(--text-secondary)] text-center py-8">
+              {{ t('students.noPayments') }}
+            </p>
+          </div>
+        </div>
+      </BaseCard>
+    </template>
+  </div>
+</template>
