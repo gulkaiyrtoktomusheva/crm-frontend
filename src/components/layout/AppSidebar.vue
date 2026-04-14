@@ -11,6 +11,7 @@ import {
   Users,
   FileText,
   Wallet,
+  Shield,
   Moon,
   Sun,
   LogOut,
@@ -31,8 +32,9 @@ const menuItems = computed(() => [
   { icon: GraduationCap, label: t('sidebar.students'), path: '/students' },
   { icon: Users, label: t('sidebar.groups'), path: '/groups' },
   { icon: FileText, label: t('sidebar.mockExams'), path: '/mock-exams' },
-  { icon: Wallet, label: t('sidebar.payments'), path: '/payments' }
-])
+  { icon: Wallet, label: t('sidebar.payments'), path: '/payments' },
+  { icon: Shield, label: t('sidebar.roles'), path: '/roles', permission: 'ROLE_VIEW' }
+].filter((item) => authStore.hasPermission(item.permission)))
 
 const isCollapsed = computed(() => appStore.sidebarCollapsed)
 const isDark = computed(() => appStore.theme === 'dark')

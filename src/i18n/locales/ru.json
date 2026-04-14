@@ -29,7 +29,8 @@
     "students": "Студенты",
     "groups": "Предметы",
     "mockExams": "Пробные экзамены",
-    "payments": "Платежи"
+    "payments": "Платежи",
+    "roles": "Роли"
   },
 
   "login": {
@@ -254,6 +255,33 @@
     "methodOther": "Другое",
     "failedLoadStudents": "Не удалось загрузить студентов",
     "payment": "Платёж"
+  },
+
+  "roles": {
+    "title": "Роли",
+    "rolesCount": "{count} ролей",
+    "searchRoles": "Поиск ролей...",
+    "newRole": "Новая роль",
+    "createRole": "Создать роль",
+    "editRole": "Редактировать роль",
+    "deleteRole": "Удалить роль",
+    "deleteConfirm": "Удалить роль \"{name}\"?",
+    "role": "Роль",
+    "roleName": "Название роли",
+    "roleNamePlaceholder": "Например, Менеджер продаж",
+    "permissions": "Права",
+    "permissionsHint": "Выберите доступы, которые будут у этой роли",
+    "permissionsCount": "{count} прав",
+    "allSelected": "Все выбраны",
+    "selectAll": "Выбрать все",
+    "noRoles": "Роли пока не созданы",
+    "nameRequired": "Название роли обязательно",
+    "roleCreated": "Роль создана",
+    "roleUpdated": "Роль обновлена",
+    "roleDeleted": "Роль удалена",
+    "failedLoad": "Не удалось загрузить роли",
+    "failedSave": "Не удалось сохранить роль",
+    "failedDelete": "Не удалось удалить роль"
   },
 
   "sources": {

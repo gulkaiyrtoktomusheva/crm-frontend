@@ -13,6 +13,39 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'ADMIN')
   const isManager = computed(() => user.value?.role === 'MANAGER')
   const isTeacher = computed(() => user.value?.role === 'TEACHER')
+  const permissions = computed(() => {
+    const rawPermissions = user.value?.permissions || user.value?.authorities || []
+    return Array.isArray(rawPermissions) ? rawPermissions : []
+  })
+
+  function extractPermissions(response) {
+    const sources = [
+      response?.permissions,
+      response?.authorities,
+      response?.user?.permissions,
+      response?.user?.authorities,
+      response?.role?.permissions
+    ]
+
+    const firstList = sources.find((value) => Array.isArray(value))
+    return firstList || []
+  }
+
+  function hasPermission(permission) {
+    if (!permission) {
+      return true
+    }
+
+    if (!isAuthenticated.value) {
+      return false
+    }
+
+    if (!permissions.value.length) {
+      return true
+    }
+
+    return permissions.value.includes(permission)
+  }
 
   async function login(credentials) {
     loading.value = true
@@ -21,10 +54,11 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authApi.login(credentials)
       token.value = response.token
       user.value = {
-        id: response.userId,
-        email: response.email,
-        fullName: response.fullName,
-        role: response.role
+        id: response.userId ?? response.user?.id,
+        email: response.email ?? response.user?.email,
+        fullName: response.fullName ?? response.user?.fullName,
+        role: response.role?.name ?? response.role ?? response.user?.role?.name ?? response.user?.role,
+        permissions: extractPermissions(response)
       }
       localStorage.setItem('token', response.token)
       localStorage.setItem('user', JSON.stringify(user.value))
@@ -69,6 +103,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     isManager,
     isTeacher,
+    permissions,
+    hasPermission,
     login,
     register,
     logout

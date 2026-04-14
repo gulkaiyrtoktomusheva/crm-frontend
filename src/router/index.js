@@ -65,6 +65,12 @@ const routes = [
         name: 'payments',
         component: () => import('@/views/payments/PaymentsView.vue'),
         meta: { title: 'Payments' }
+      },
+      {
+        path: 'roles',
+        name: 'roles',
+        component: () => import('@/views/roles/RolesView.vue'),
+        meta: { title: 'Roles', requiredPermission: 'ROLE_VIEW' }
       }
     ]
   },
@@ -83,10 +89,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const isAuthenticated = !!token
+  const user = JSON.parse(localStorage.getItem('user') || 'null')
+  const permissions = Array.isArray(user?.permissions || user?.authorities)
+    ? (user.permissions || user.authorities)
+    : []
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
   } else if (to.path === '/login' && isAuthenticated) {
+    next('/')
+  } else if (to.meta.requiredPermission && permissions.length && !permissions.includes(to.meta.requiredPermission)) {
     next('/')
   } else {
     next()

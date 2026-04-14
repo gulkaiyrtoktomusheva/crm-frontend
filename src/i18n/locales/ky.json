@@ -29,7 +29,8 @@
     "students": "Студенттер",
     "groups": "Предметтер",
     "mockExams": "Сыноо экзамендери",
-    "payments": "Төлөмдөр"
+    "payments": "Төлөмдөр",
+    "roles": "Ролдор"
   },
 
   "login": {
@@ -254,6 +255,33 @@
     "methodOther": "Башка",
     "failedLoadStudents": "Студенттерди жүктөө мүмкүн болбоду",
     "payment": "Төлөм"
+  },
+
+  "roles": {
+    "title": "Ролдор",
+    "rolesCount": "{count} роль",
+    "searchRoles": "Ролдорду издөө...",
+    "newRole": "Жаңы роль",
+    "createRole": "Роль түзүү",
+    "editRole": "Ролду өзгөртүү",
+    "deleteRole": "Ролду өчүрүү",
+    "deleteConfirm": "\"{name}\" ролун өчүрөсүзбү?",
+    "role": "Роль",
+    "roleName": "Ролдун аталышы",
+    "roleNamePlaceholder": "Мисалы, Сатуу менеджери",
+    "permissions": "Уруксаттар",
+    "permissionsHint": "Бул роль үчүн жеткиликтүү укуктарды тандаңыз",
+    "permissionsCount": "{count} уруксат",
+    "allSelected": "Баары тандалды",
+    "selectAll": "Баарын тандоо",
+    "noRoles": "Азырынча ролдор жок",
+    "nameRequired": "Ролдун аталышы милдеттүү",
+    "roleCreated": "Роль түзүлдү",
+    "roleUpdated": "Роль жаңыртылды",
+    "roleDeleted": "Роль өчүрүлдү",
+    "failedLoad": "Ролдорду жүктөө мүмкүн болбоду",
+    "failedSave": "Ролду сактоо мүмкүн болбоду",
+    "failedDelete": "Ролду өчүрүү мүмкүн болбоду"
   },
 
   "sources": {

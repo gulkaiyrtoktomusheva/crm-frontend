@@ -29,7 +29,8 @@
     "students": "Students",
     "groups": "Subjects",
     "mockExams": "Mock Exams",
-    "payments": "Payments"
+    "payments": "Payments",
+    "roles": "Roles"
   },
 
   "login": {
@@ -254,6 +255,33 @@
     "methodOther": "Other",
     "failedLoadStudents": "Failed to load students",
     "payment": "Payment"
+  },
+
+  "roles": {
+    "title": "Roles",
+    "rolesCount": "{count} roles",
+    "searchRoles": "Search roles...",
+    "newRole": "New Role",
+    "createRole": "Create role",
+    "editRole": "Edit role",
+    "deleteRole": "Delete role",
+    "deleteConfirm": "Delete role \"{name}\"?",
+    "role": "Role",
+    "roleName": "Role name",
+    "roleNamePlaceholder": "For example, Sales Manager",
+    "permissions": "Permissions",
+    "permissionsHint": "Choose which permissions this role will have",
+    "permissionsCount": "{count} permissions",
+    "allSelected": "All selected",
+    "selectAll": "Select all",
+    "noRoles": "No roles created yet",
+    "nameRequired": "Role name is required",
+    "roleCreated": "Role created",
+    "roleUpdated": "Role updated",
+    "roleDeleted": "Role deleted",
+    "failedLoad": "Failed to load roles",
+    "failedSave": "Failed to save role",
+    "failedDelete": "Failed to delete role"
   },
 
   "sources": {
