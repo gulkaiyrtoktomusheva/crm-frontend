@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Plus, RotateCw } from 'lucide-vue-next'
+import { Plus, RotateCw, Pencil } from 'lucide-vue-next'
 import { studentsApi } from '@/api/students'
 import { paymentAgreementsApi } from '@/api/paymentAgreements'
 import { paymentTransactionsApi } from '@/api/paymentTransactions'
@@ -27,6 +27,7 @@ const showAgreementModal = ref(false)
 const showTransactionModal = ref(false)
 const agreementLoading = ref(false)
 const transactionLoading = ref(false)
+const editingAgreement = ref(null)
 
 const canCreateAgreement = computed(() => authStore.hasPermission('PAYMENT_CREATE'))
 const canCreateTransaction = computed(() => authStore.hasPermission('PAYMENT_CREATE'))
@@ -85,12 +86,20 @@ async function fetchFinance() {
 async function handleCreateAgreement(payload) {
   agreementLoading.value = true
   try {
-    await paymentAgreementsApi.create(payload)
-    showAgreementModal.value = false
-    toast.success(t('coursePayments.agreementCreated'))
+    if (editingAgreement.value) {
+      await paymentAgreementsApi.update(editingAgreement.value.id, payload)
+      toast.success(t('coursePayments.agreementUpdated'))
+    } else {
+      await paymentAgreementsApi.create(payload)
+      toast.success(t('coursePayments.agreementCreated'))
+    }
+
+    closeAgreementModal()
     await fetchFinance()
   } catch (error) {
-    toast.error(t('coursePayments.failedCreateAgreement'))
+    toast.error(editingAgreement.value
+      ? t('coursePayments.failedUpdateAgreement')
+      : t('coursePayments.failedCreateAgreement'))
   } finally {
     agreementLoading.value = false
   }
@@ -118,6 +127,21 @@ async function refreshAgreementStatus(agreementId) {
     toast.error(t('coursePayments.failedRefreshAgreement'))
   }
 }
+
+function openCreateAgreementModal() {
+  editingAgreement.value = null
+  showAgreementModal.value = true
+}
+
+function openEditAgreementModal(agreement) {
+  editingAgreement.value = agreement
+  showAgreementModal.value = true
+}
+
+function closeAgreementModal() {
+  showAgreementModal.value = false
+  editingAgreement.value = null
+}
 </script>
 
 <template>
@@ -137,7 +161,11 @@ async function refreshAgreementStatus(agreementId) {
         </div>
 
         <div v-if="selectedStudent" class="flex flex-wrap gap-3">
-          <BaseButton v-if="canCreateAgreement" variant="secondary" @click="showAgreementModal = true">
+          <BaseButton
+            v-if="canCreateAgreement && finance?.courses?.some((course) => !course.agreement)"
+            variant="secondary"
+            @click="openCreateAgreementModal"
+          >
             <Plus class="mr-2 h-4 w-4" />
             {{ t('coursePayments.newAgreement') }}
           </BaseButton>
@@ -245,10 +273,21 @@ async function refreshAgreementStatus(agreementId) {
                       </p>
                     </div>
 
-                    <BaseButton variant="ghost" size="sm" @click="refreshAgreementStatus(course.agreement.id)">
-                      <RotateCw class="mr-1 h-4 w-4" />
-                      {{ t('coursePayments.refreshAgreement') }}
-                    </BaseButton>
+                    <div class="flex items-center gap-2">
+                      <BaseButton variant="ghost" size="sm" @click="refreshAgreementStatus(course.agreement.id)">
+                        <RotateCw class="mr-1 h-4 w-4" />
+                        {{ t('coursePayments.refreshAgreement') }}
+                      </BaseButton>
+                      <BaseButton
+                        v-if="canCreateAgreement && course.agreement.status === 'ACTIVE'"
+                        variant="ghost"
+                        size="sm"
+                        @click="openEditAgreementModal(course.agreement)"
+                      >
+                        <Pencil class="mr-1 h-4 w-4" />
+                        {{ t('common.edit') }}
+                      </BaseButton>
+                    </div>
                   </div>
 
                   <div class="mt-4 grid grid-cols-1 gap-3 text-sm text-[var(--text-secondary)] sm:grid-cols-3">
@@ -344,9 +383,10 @@ async function refreshAgreementStatus(agreementId) {
     <PaymentAgreementFormModal
       :show="showAgreementModal"
       :loading="agreementLoading"
+      :agreement="editingAgreement"
       :agreements="agreements"
       :enrollments="finance?.courses || []"
-      @close="showAgreementModal = false"
+      @close="closeAgreementModal"
       @submit="handleCreateAgreement"
     />
 

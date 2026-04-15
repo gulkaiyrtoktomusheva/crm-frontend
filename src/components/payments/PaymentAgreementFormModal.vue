@@ -11,6 +11,10 @@ const { t } = useI18n()
 const props = defineProps({
   show: Boolean,
   loading: Boolean,
+  agreement: {
+    type: Object,
+    default: null
+  },
   agreements: {
     type: Array,
     default: () => []
@@ -29,7 +33,10 @@ const typeOptions = computed(() => [
 ])
 
 const occupiedEnrollmentIds = computed(() => new Set(
-  props.agreements.map((agreement) => agreement.studentCourseId).filter(Boolean)
+  props.agreements
+    .filter((agreement) => agreement.status === 'ACTIVE')
+    .map((agreement) => agreement.studentCourseId)
+    .filter(Boolean)
 ))
 
 const enrollmentOptions = computed(() => props.enrollments
@@ -50,8 +57,33 @@ const emptyForm = () => ({
 const form = ref(emptyForm())
 
 watch(() => props.show, (open) => {
-  if (open) {
-    form.value = emptyForm()
+  if (!open) {
+    return
+  }
+
+  if (props.agreement) {
+    form.value = {
+      studentCourseId: props.agreement.studentCourseId || null,
+      type: props.agreement.type || 'FULL',
+      firstDueDate: props.agreement.firstDueDate || '',
+      monthsCount: props.agreement.monthsCount || 1,
+      billingDay: props.agreement.billingDay ?? ''
+    }
+    return
+  }
+
+  form.value = emptyForm()
+})
+
+watch(() => form.value.type, (type) => {
+  if (type === 'FULL') {
+    form.value.monthsCount = 1
+    form.value.billingDay = ''
+    return
+  }
+
+  if (Number(form.value.monthsCount) < 2) {
+    form.value.monthsCount = 2
   }
 })
 
@@ -60,7 +92,9 @@ function handleSubmit() {
     studentCourseId: form.value.studentCourseId ? Number(form.value.studentCourseId) : null,
     type: form.value.type || null,
     firstDueDate: form.value.firstDueDate || null,
-    monthsCount: Number(form.value.monthsCount || 1),
+    monthsCount: form.value.type === 'FULL'
+      ? 1
+      : Math.max(2, Number(form.value.monthsCount || 2)),
     billingDay: form.value.billingDay === '' ? null : Number(form.value.billingDay)
   })
 }
@@ -69,7 +103,7 @@ function handleSubmit() {
 <template>
   <BaseModal
     :show="show"
-    :title="t('coursePayments.newAgreement')"
+    :title="agreement ? t('coursePayments.editAgreement') : t('coursePayments.newAgreement')"
     size="lg"
     @close="$emit('close')"
   >
@@ -79,6 +113,7 @@ function handleSubmit() {
         :label="t('coursePayments.enrollment') + ' *'"
         :options="enrollmentOptions"
         :placeholder="t('coursePayments.selectEnrollment')"
+        :disabled="Boolean(agreement)"
       />
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -99,14 +134,16 @@ function handleSubmit() {
           v-model="form.monthsCount"
           :label="t('coursePayments.monthsCount') + ' *'"
           type="number"
-          min="1"
+          :min="form.type === 'FULL' ? 1 : 2"
+          :disabled="form.type === 'FULL'"
         />
         <BaseInput
           v-model="form.billingDay"
           :label="t('coursePayments.billingDay')"
           type="number"
           min="1"
-          max="31"
+          max="28"
+          :disabled="form.type === 'FULL'"
         />
       </div>
     </form>
@@ -120,7 +157,7 @@ function handleSubmit() {
         :disabled="!form.studentCourseId || !form.type || !form.firstDueDate"
         @click="handleSubmit"
       >
-        {{ t('common.create') }}
+        {{ agreement ? t('common.save') : t('common.create') }}
       </BaseButton>
     </template>
   </BaseModal>

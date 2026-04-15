@@ -39,7 +39,7 @@ const creating = ref(false)
 
 async function fetchTeachers() {
   try {
-    const data = await usersApi.getAll({ role: 'TEACHER' })
+    const data = await usersApi.getAll({ roleName: 'TEACHER' })
     teachers.value = data
     teachersOptions.value = data.map(t => ({ value: t.id, label: t.fullName }))
   } catch (e) {
@@ -67,6 +67,7 @@ onMounted(async () => {
   } catch (e) {
     console.error(e)
   }
+  await fetchTeachers()
   fetchGroups()
 })
 

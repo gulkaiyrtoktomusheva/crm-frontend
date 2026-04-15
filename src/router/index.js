@@ -43,6 +43,12 @@ const routes = [
         meta: { title: 'Courses', requiredPermission: 'COURSE_VIEW' }
       },
       {
+        path: 'courses/:id',
+        name: 'course-detail',
+        component: () => import('@/views/courses/CourseDetailView.vue'),
+        meta: { title: 'Course Details', requiredPermission: 'COURSE_VIEW' }
+      },
+      {
         path: 'enrollments',
         name: 'enrollments',
         component: () => import('@/views/enrollments/EnrollmentsView.vue'),
@@ -52,13 +58,13 @@ const routes = [
         path: 'groups',
         name: 'groups',
         component: () => import('@/views/groups/GroupsView.vue'),
-        meta: { title: 'Groups' }
+        meta: { title: 'Groups', requiredPermission: 'GROUP_VIEW' }
       },
       {
         path: 'groups/:id',
         name: 'group-detail',
         component: () => import('@/views/groups/GroupDetailView.vue'),
-        meta: { title: 'Group Details' }
+        meta: { title: 'Group Details', requiredPermission: 'GROUP_VIEW' }
       },
       {
         path: 'mock-exams',

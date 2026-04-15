@@ -32,7 +32,14 @@ const selectClasses = computed(() => {
 })
 
 function handleChange(event) {
-  emit('update:modelValue', event.target.value || null)
+  const rawValue = event.target.value
+  if (!rawValue) {
+    emit('update:modelValue', null)
+    return
+  }
+
+  const matchedOption = props.options.find((option) => String(option.value) === rawValue)
+  emit('update:modelValue', matchedOption ? matchedOption.value : rawValue)
 }
 </script>
 

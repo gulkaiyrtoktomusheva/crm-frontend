@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Plus, Pencil, Trash2, BookOpen } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, BookOpen, Eye } from 'lucide-vue-next'
 import { coursesApi } from '@/api/courses'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
@@ -12,6 +13,7 @@ import BaseSearchInput from '@/components/ui/BaseSearchInput.vue'
 import BaseTable from '@/components/ui/BaseTable.vue'
 
 const { t } = useI18n()
+const router = useRouter()
 const toast = useToast()
 const confirm = useConfirm()
 const authStore = useAuthStore()
@@ -87,6 +89,10 @@ function openCreateModal() {
 function openEditModal(course) {
   editingCourse.value = course
   showModal.value = true
+}
+
+function viewCourse(course) {
+  router.push(`/courses/${course.id}`)
 }
 
 function closeModal() {
@@ -194,6 +200,10 @@ async function handleDelete(course) {
 
         <template #actions="{ row }">
           <div class="flex items-center justify-end gap-2">
+            <BaseButton variant="ghost" size="sm" @click="viewCourse(row)">
+              <Eye class="mr-1 h-4 w-4" />
+              {{ t('common.view') || 'View' }}
+            </BaseButton>
             <BaseButton v-if="canUpdate" variant="ghost" size="sm" @click="openEditModal(row)">
               <Pencil class="mr-1 h-4 w-4" />
               {{ t('common.edit') }}

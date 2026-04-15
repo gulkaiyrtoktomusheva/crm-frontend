@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { groupsApi } from '@/api/groups'
@@ -25,13 +25,7 @@ const savingAttendance = ref(false)
 onMounted(async () => {
   try {
     group.value = await groupsApi.getById(route.params.id)
-    if (group.value.students) {
-      attendance.value = group.value.students.map(s => ({
-        studentId: s.id,
-        studentName: s.fullName,
-        present: null
-      }))
-    }
+    await fetchAttendance()
   } catch (e) {
     toast.error(t('groups.failedLoadGroup'))
     router.push('/groups')
@@ -39,6 +33,31 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+watch(attendanceDate, async () => {
+  if (group.value) {
+    await fetchAttendance()
+  }
+})
+
+async function fetchAttendance() {
+  const baseRecords = (group.value?.students || []).map((student) => ({
+    studentId: student.id,
+    studentName: student.fullName,
+    present: null
+  }))
+
+  try {
+    const records = await attendanceApi.getByGroupAndDate(route.params.id, attendanceDate.value)
+    const attendanceMap = new Map(records.map((record) => [record.studentId, record.present]))
+    attendance.value = baseRecords.map((record) => ({
+      ...record,
+      present: attendanceMap.has(record.studentId) ? attendanceMap.get(record.studentId) : null
+    }))
+  } catch (e) {
+    attendance.value = baseRecords
+  }
+}
 
 function toggleAttendance(studentId, present) {
   const record = attendance.value.find(a => a.studentId === studentId)
@@ -103,25 +122,18 @@ async function saveAttendance() {
               <span v-if="group.teacherName" class="flex items-center gap-1">
                 <Users class="w-4 h-4" /> {{ group.teacherName }}
               </span>
-              <span v-if="group.schedule" class="flex items-center gap-1">
-                <Clock class="w-4 h-4" /> {{ group.schedule }}
-              </span>
               <span class="flex items-center gap-1">
                 <Calendar class="w-4 h-4" />
+                {{ group.startDate ? new Date(group.startDate).toLocaleDateString('ru-RU') : '-' }}
+                -
+                {{ group.endDate ? new Date(group.endDate).toLocaleDateString('ru-RU') : '-' }}
+              </span>
+              <span class="flex items-center gap-1">
+                <Clock class="w-4 h-4" />
                 {{ group.students?.length || 0 }} {{ t('common.students') }}
               </span>
             </div>
           </div>
-
-          <a
-            v-if="group.zoomLink"
-            :href="group.zoomLink"
-            target="_blank"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-colors"
-          >
-            <ExternalLink class="w-4 h-4" />
-            {{ t('groups.openZoom') }}
-          </a>
         </div>
       </BaseCard>
 
