@@ -13,7 +13,7 @@ import BaseSearchInput from '@/components/ui/BaseSearchInput.vue'
 import BasePagination from '@/components/ui/BasePagination.vue'
 import BaseAvatar from '@/components/ui/BaseAvatar.vue'
 import BaseDropdown from '@/components/ui/BaseDropdown.vue'
-import { Plus, Eye, Download } from 'lucide-vue-next'
+import { Plus, Eye, Download, Pencil } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -37,7 +37,7 @@ const columns = computed(() => [
   { key: 'grade', label: t('common.grade'), width: '96px' },
   { key: 'city', label: t('students.city'), width: '22%' },
   { key: 'status', label: t('leads.status'), width: '160px' },
-  { key: 'actions', label: '', width: '72px' }
+  { key: 'actions', label: '', width: '120px' }
 ])
 
 const statusOptions = computed(() => [
@@ -112,6 +112,11 @@ watch([() => pagination.page.value, statusFilter, search], fetchStudents)
 
 function openCreateModal() {
   selectedStudent.value = null
+  showModal.value = true
+}
+
+function openEditModal(student) {
+  selectedStudent.value = student
   showModal.value = true
 }
 
@@ -448,6 +453,12 @@ async function exportStudentsToPdf() {
 
         <template #actions="{ row }">
           <div class="flex items-center gap-1">
+            <button
+              @click="openEditModal(row)"
+              class="p-2 rounded-lg hover:bg-white/5 text-[var(--text-secondary)] hover:text-white transition-colors"
+            >
+              <Pencil class="w-4 h-4" />
+            </button>
             <button
               @click="viewStudent(row)"
               class="p-2 rounded-lg hover:bg-white/5 text-[var(--text-secondary)] hover:text-white transition-colors"

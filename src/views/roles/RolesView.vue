@@ -38,7 +38,12 @@ const permissionGroups = [
   {
     key: 'users',
     label: 'Users',
-    permissions: ['USER_VIEW', 'USER_CREATE']
+    permissions: ['USER_VIEW', 'USER_CREATE', 'USER_UPDATE', 'USER_DELETE']
+  },
+  {
+    key: 'courses',
+    label: 'Courses',
+    permissions: ['COURSE_VIEW', 'COURSE_CREATE', 'COURSE_UPDATE', 'COURSE_DELETE', 'COURSE_MANAGE_SUBJECTS']
   },
   {
     key: 'roles',
@@ -180,11 +185,8 @@ function isGroupSelected(groupPermissions) {
 }
 
 function formatPermission(permission) {
-  return permission
-    .toLowerCase()
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  const translated = t(`permissions.${permission}`)
+  return translated === `permissions.${permission}` ? permission : translated
 }
 
 async function handleSubmit() {

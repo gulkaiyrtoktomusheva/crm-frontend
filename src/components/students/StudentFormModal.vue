@@ -1,11 +1,10 @@
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import { groupsApi } from '@/api/groups'
 
 const { t } = useI18n()
 
@@ -16,8 +15,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'submit'])
-
-const groups = ref([])
 
 const emptyForm = () => ({
   fullName: '',
@@ -31,8 +28,7 @@ const emptyForm = () => ({
   ortDate: '',
   status: 'ACTIVE',
   source: null,
-  referredBy: '',
-  groupIds: []
+  referredByStudentId: ''
 })
 
 const form = ref(emptyForm())
@@ -58,14 +54,6 @@ const gradeOptions = computed(() => [
   { value: 11, label: '11 ' + t('students.gradeClass') }
 ])
 
-onMounted(async () => {
-  try {
-    groups.value = await groupsApi.getAll()
-  } catch (e) {
-    console.error(e)
-  }
-})
-
 watch(() => props.show, (open) => {
   if (!open) return
 
@@ -73,19 +61,12 @@ watch(() => props.show, (open) => {
     form.value = {
       ...emptyForm(),
       ...props.student,
-      groupIds: (props.student.groups || []).map(g => g.id)
+      referredByStudentId: props.student.referredByStudentId || ''
     }
   } else {
     form.value = emptyForm()
   }
 })
-
-function toggleGroup(id) {
-  const ids = form.value.groupIds
-  const index = ids.indexOf(id)
-  if (index > -1) ids.splice(index, 1)
-  else ids.push(id)
-}
 
 function handleSubmit() {
   const payload = {
@@ -100,11 +81,11 @@ function handleSubmit() {
     ortDate: form.value.ortDate || null,
     status: form.value.status,
     source: form.value.source,
-    referredBy: form.value.referredBy,
-    groupIds: form.value.groupIds
+    referredByStudentId: form.value.referredByStudentId
+      ? Number(form.value.referredByStudentId)
+      : null
   }
 
-  console.log('PAYLOAD =>', payload)
   emit('submit', payload)
 }
 
@@ -144,25 +125,12 @@ function handleSubmit() {
         <BaseSelect v-model="form.source" :label="t('students.source')" :options="sourceOptions" :placeholder="t('students.selectSource')" />
       </div>
 
-      <div>
-        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">{{ t('students.groups') }}</label>
-        <div class="flex flex-wrap gap-2">
-          <button
-              v-for="group in groups"
-              :key="group.id"
-              type="button"
-              @click="toggleGroup(group.id)"
-              :class="[
-              'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border',
-              form.groupIds.includes(group.id)
-                ? 'bg-accent/20 border-accent text-accent'
-                : 'bg-white/5 border-white/10 text-[var(--text-secondary)] hover:bg-white/10'
-            ]"
-          >
-            {{ group.name }}
-          </button>
-        </div>
-      </div>
+      <BaseInput
+        v-model="form.referredByStudentId"
+        :label="t('students.referredByStudentId')"
+        type="number"
+        placeholder="ID"
+      />
     </form>
 
     <template #footer>

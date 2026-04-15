@@ -50,15 +50,18 @@ function handleKeydown(e) {
     <Transition name="modal">
       <div
         v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/60 backdrop-blur-sm"
         @click="handleBackdropClick"
         @keydown="handleKeydown"
       >
         <div
-          :class="['w-full bg-[var(--bg-secondary)] rounded-2xl border border-white/5 shadow-2xl', sizeClasses[size]]"
+          :class="[
+            'my-auto flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-hidden bg-[var(--bg-secondary)] rounded-2xl border border-white/5 shadow-2xl',
+            sizeClasses[size]
+          ]"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+          <div class="flex shrink-0 items-center justify-between px-6 py-4 border-b border-white/5">
             <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ title }}</h3>
             <button
               @click="$emit('close')"
@@ -69,12 +72,12 @@ function handleKeydown(e) {
           </div>
 
           <!-- Body -->
-          <div class="px-6 py-4">
+          <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
             <slot />
           </div>
 
           <!-- Footer -->
-          <div v-if="$slots.footer" class="px-6 py-4 border-t border-white/5 flex justify-end gap-3">
+          <div v-if="$slots.footer" class="flex shrink-0 justify-end gap-3 border-t border-white/5 px-6 py-4">
             <slot name="footer" />
           </div>
         </div>

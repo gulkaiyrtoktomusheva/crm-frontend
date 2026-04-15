@@ -9,8 +9,12 @@ export const studentsApi = {
     return api.get(`/students/${id}`)
   },
 
+  getFinance(id) {
+    return api.get(`/students/${id}/finance`)
+  },
+
   create(data) {
-    return api.post('/students', data)
+    return api.post('/students/create', data)
   },
 
   update(id, data) {

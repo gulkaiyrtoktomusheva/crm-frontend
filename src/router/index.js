@@ -37,6 +37,18 @@ const routes = [
         meta: { title: 'Student Profile' }
       },
       {
+        path: 'courses',
+        name: 'courses',
+        component: () => import('@/views/courses/CoursesView.vue'),
+        meta: { title: 'Courses', requiredPermission: 'COURSE_VIEW' }
+      },
+      {
+        path: 'enrollments',
+        name: 'enrollments',
+        component: () => import('@/views/enrollments/EnrollmentsView.vue'),
+        meta: { title: 'Enrollments', requiredPermission: 'STUDENT_VIEW' }
+      },
+      {
         path: 'groups',
         name: 'groups',
         component: () => import('@/views/groups/GroupsView.vue'),
@@ -64,13 +76,19 @@ const routes = [
         path: 'payments',
         name: 'payments',
         component: () => import('@/views/payments/PaymentsView.vue'),
-        meta: { title: 'Payments' }
+        meta: { title: 'Payments', requiredPermission: 'PAYMENT_VIEW' }
       },
       {
         path: 'roles',
         name: 'roles',
         component: () => import('@/views/roles/RolesView.vue'),
         meta: { title: 'Roles', requiredPermission: 'ROLE_VIEW' }
+      },
+      {
+        path: 'users',
+        name: 'users',
+        component: () => import('@/views/users/UsersView.vue'),
+        meta: { title: 'Users', requiredPermission: 'USER_VIEW' }
       }
     ]
   },

@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { studentsApi } from '@/api/students'
 import { useToast } from '@/composables/useToast'
 import StudentStatusBadge from '@/components/students/StudentStatusBadge.vue'
-import PaymentStatusBadge from '@/components/payments/PaymentStatusBadge.vue'
+import StudentFormModal from '@/components/students/StudentFormModal.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseAvatar from '@/components/ui/BaseAvatar.vue'
 import BaseBadge from '@/components/ui/BaseBadge.vue'
@@ -13,8 +13,8 @@ import BaseSkeleton from '@/components/ui/BaseSkeleton.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import {
   ArrowLeft,
+  Pencil,
   Phone,
-  MessageCircle,
   MapPin,
   GraduationCap,
   Calendar,
@@ -29,14 +29,19 @@ const toast = useToast()
 const student = ref(null)
 const loading = ref(true)
 const activeTab = ref('attendance')
+const showEditModal = ref(false)
+const modalLoading = ref(false)
 
 const tabs = computed(() => [
   { id: 'attendance', label: t('students.attendance') },
-  { id: 'scores', label: t('students.mockScores') },
-  { id: 'payments', label: t('students.payments') }
+  { id: 'scores', label: t('students.mockScores') }
 ])
 
 onMounted(async () => {
+  await fetchStudent()
+})
+
+async function fetchStudent() {
   try {
     student.value = await studentsApi.getById(route.params.id)
   } catch (e) {
@@ -45,22 +50,30 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
+}
 
 function formatDate(date) {
   if (!date) return '-'
   return new Date(date).toLocaleDateString('ru-RU')
 }
 
-function formatCurrency(amount) {
-  if (!amount) return '0'
-  return new Intl.NumberFormat('ru-RU').format(amount) + ' ' + t('common.currency')
-}
-
 const attendancePercent = computed(() => {
   if (!student.value?.attendancePercentage) return 0
   return Math.round(student.value.attendancePercentage)
 })
+
+async function handleSubmit(data) {
+  modalLoading.value = true
+  try {
+    student.value = await studentsApi.update(route.params.id, data)
+    showEditModal.value = false
+    toast.success(t('students.studentUpdated'))
+  } catch (e) {
+    toast.error(t('students.failedSave'))
+  } finally {
+    modalLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -110,7 +123,13 @@ const attendancePercent = computed(() => {
                   </span>
                 </div>
               </div>
-              <StudentStatusBadge :status="student.status" />
+              <div class="flex items-center gap-3">
+                <StudentStatusBadge :status="student.status" />
+                <BaseButton variant="secondary" size="sm" @click="showEditModal = true">
+                  <Pencil class="w-4 h-4 mr-2" />
+                  {{ t('common.edit') }}
+                </BaseButton>
+              </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-4 mt-4 text-sm text-[var(--text-secondary)]">
@@ -121,6 +140,9 @@ const attendancePercent = computed(() => {
                 <Calendar class="w-4 h-4" /> ORT: {{ formatDate(student.ortDate) }}
               </span>
               <span v-if="student.grade">{{ t('common.grade') }}: {{ student.grade }}</span>
+              <span v-if="student.whatsapp" class="flex items-center gap-1">
+                <Phone class="w-4 h-4" /> WhatsApp: {{ student.whatsapp }}
+              </span>
             </div>
 
             <div class="flex flex-wrap gap-2 mt-4">
@@ -156,16 +178,6 @@ const attendancePercent = computed(() => {
           <p class="text-sm text-[var(--text-secondary)]">{{ t('students.avgMockScore') }}</p>
           <p class="text-2xl font-bold text-[var(--text-primary)] mt-1">
             {{ student.averageMockScore ? Math.round(student.averageMockScore) : '-' }}
-          </p>
-        </BaseCard>
-
-        <BaseCard>
-          <p class="text-sm text-[var(--text-secondary)]">{{ t('students.balance') }}</p>
-          <p :class=" [
-            'text-2xl font-bold mt-1',
-            student.balance > 0 ? 'text-red-400' : 'text-emerald-400'
-          ]">
-            {{ formatCurrency(student.balance) }}
           </p>
         </BaseCard>
       </div>
@@ -232,47 +244,16 @@ const attendancePercent = computed(() => {
             </p>
           </div>
 
-          <!-- Payments tab -->
-          <div v-if="activeTab === 'payments'">
-            <div class="mb-4 p-4 bg-white/5 rounded-xl">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-[var(--text-secondary)]">{{ t('students.totalPaid') }}</p>
-                  <p class="text-xl font-bold text-emerald-400">{{ formatCurrency(student.totalPaid) }}</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-sm text-[var(--text-secondary)]">{{ t('students.totalDue') }}</p>
-                  <p class="text-xl font-bold text-[var(--text-primary)]">{{ formatCurrency(student.totalDue) }}</p>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="student.payments?.length" class="space-y-3">
-              <div
-                v-for="payment in student.payments"
-                :key="payment.id"
-                class="flex items-center justify-between p-4 bg-white/5 rounded-xl"
-              >
-                <div>
-                  <p class="font-medium text-[var(--text-primary)]">
-                    {{ t('payments.payment') }} {{ payment.installmentNumber }}/{{ payment.totalInstallments }}
-                  </p>
-                  <p class="text-sm text-[var(--text-secondary)]">
-                    {{ t('payments.dueDate') }}: {{ formatDate(payment.dueDate) }}
-                  </p>
-                </div>
-                <div class="text-right">
-                  <p class="font-bold text-[var(--text-primary)]">{{ formatCurrency(payment.amount) }}</p>
-                  <PaymentStatusBadge :status="payment.status" />
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-[var(--text-secondary)] text-center py-8">
-              {{ t('students.noPayments') }}
-            </p>
-          </div>
         </div>
       </BaseCard>
     </template>
+
+    <StudentFormModal
+      :show="showEditModal"
+      :student="student"
+      :loading="modalLoading"
+      @close="showEditModal = false"
+      @submit="handleSubmit"
+    />
   </div>
 </template>
