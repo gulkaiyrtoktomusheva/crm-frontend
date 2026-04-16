@@ -60,7 +60,7 @@ function handleKeydown(e) {
       >
         <div
           :class="[
-            'my-auto flex max-h-[calc(100vh-2rem)] w-full flex-col rounded-2xl border shadow-2xl',
+            'my-auto flex max-h-[calc(100vh-2rem)] w-full flex-col rounded-lg border shadow-2xl',
             props.bodyOverflowVisible ? 'overflow-visible' : 'overflow-hidden',
             sizeClasses[size]
           ]"
@@ -71,7 +71,7 @@ function handleKeydown(e) {
             <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ title }}</h3>
             <button
               @click="$emit('close')"
-              class="p-2 rounded-lg text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
+              class="rounded-md p-2 text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
             >
               <X class="w-5 h-5" />
             </button>

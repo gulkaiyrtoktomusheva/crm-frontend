@@ -154,10 +154,10 @@ async function handleDelete(course) {
   <div class="course-page">
     <section class="course-hero">
       <div>
-        <p class="course-overline">ACADEMIC OPERATIONS</p>
+        <p class="course-overline">{{ t('courses.overline') }}</p>
         <h1 class="course-title">{{ t('courses.title') }}</h1>
         <p class="course-subtitle">
-          Управление расписанием курсов, ценой и текущим набором в едином рабочем реестре.
+          {{ t('courses.subtitle') }}
         </p>
       </div>
 
@@ -182,19 +182,19 @@ async function handleDelete(course) {
       <article class="course-stat-card">
         <span class="course-stat-label">{{ t('courses.statusActive') }}</span>
         <strong class="course-stat-value">{{ courseStats.active }}</strong>
-        <span class="course-stat-hint">Идут сейчас</span>
+        <span class="course-stat-hint">{{ t('courses.activeHint') }}</span>
       </article>
 
       <article class="course-stat-card">
         <span class="course-stat-label">{{ t('courses.statusPlanned') }}</span>
         <strong class="course-stat-value">{{ courseStats.planned }}</strong>
-        <span class="course-stat-hint">Ожидают запуска</span>
+        <span class="course-stat-hint">{{ t('courses.plannedHint') }}</span>
       </article>
 
       <article class="course-stat-card">
         <span class="course-stat-label">{{ t('courses.statusCompleted') }}</span>
         <strong class="course-stat-value">{{ courseStats.completed }}</strong>
-        <span class="course-stat-hint">Завершены</span>
+        <span class="course-stat-hint">{{ t('courses.completedHint') }}</span>
       </article>
     </section>
 
@@ -212,7 +212,7 @@ async function handleDelete(course) {
 
         <div class="course-toolbar-meta">
           <span class="course-toolbar-count">
-            {{ filteredCourses.length }} записей
+            {{ t('courses.recordsCount', { count: filteredCourses.length }) }}
           </span>
         </div>
       </div>
@@ -225,7 +225,7 @@ async function handleDelete(course) {
               <th>{{ t('courses.period') }}</th>
               <th>{{ t('courses.price') }}</th>
               <th>{{ t('courses.status') }}</th>
-              <th class="course-actions-head">Actions</th>
+              <th class="course-actions-head">{{ t('common.actions') }}</th>
             </tr>
           </thead>
 
@@ -258,7 +258,7 @@ async function handleDelete(course) {
                   </div>
                   <div class="min-w-0">
                     <p class="course-name">{{ course.name }}</p>
-                    <p class="course-meta">Course ID {{ course.id }}</p>
+                    <p class="course-meta">{{ t('courses.courseId', { id: course.id }) }}</p>
                   </div>
                 </div>
               </td>
@@ -286,7 +286,7 @@ async function handleDelete(course) {
                   <button
                     type="button"
                     class="course-icon-action"
-                    title="Open course"
+                    :title="t('common.view')"
                     @click="viewCourse(course)"
                   >
                     <Eye class="h-4 w-4" />
@@ -296,7 +296,7 @@ async function handleDelete(course) {
                     v-if="canUpdate"
                     type="button"
                     class="course-icon-action"
-                    title="Edit course"
+                    :title="t('common.edit')"
                     @click="openEditModal(course)"
                   >
                     <Pencil class="h-4 w-4" />
@@ -306,7 +306,7 @@ async function handleDelete(course) {
                     v-if="canDelete"
                     type="button"
                     class="course-icon-action course-icon-action-danger"
-                    title="Delete course"
+                    :title="t('common.delete')"
                     @click="handleDelete(course)"
                   >
                     <Trash2 class="h-4 w-4" />

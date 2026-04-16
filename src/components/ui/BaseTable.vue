@@ -35,7 +35,7 @@ defineProps({
           <th
             v-for="col in columns"
             :key="col.key"
-            class="px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider first:rounded-tl-xl last:rounded-tr-xl"
+            class="px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider first:rounded-tl-md last:rounded-tr-md"
             :style="col.width ? { width: col.width } : {}"
           >
             <slot :name="`header-${col.key}`" :column="col">

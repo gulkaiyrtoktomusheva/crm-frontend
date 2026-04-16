@@ -22,7 +22,7 @@ const paddingClasses = {
 <template>
   <div
     :class="[
-      'surface-panel rounded-2xl',
+      'surface-panel rounded-lg',
       paddingClasses[padding],
       hoverable ? 'card-hover cursor-pointer' : ''
     ]"

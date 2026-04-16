@@ -34,7 +34,7 @@ const classes = computed(() => {
   }
 
   return [
-    'inline-flex items-center font-medium rounded-lg',
+    'inline-flex items-center font-medium rounded-md',
     variants[props.variant],
     sizes[props.size]
   ]

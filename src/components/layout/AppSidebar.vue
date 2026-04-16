@@ -89,8 +89,8 @@ const currentLangLabel = computed(() => {
   >
     <!-- Logo -->
     <div class="h-16 flex items-center px-4 border-b" :style="{ borderColor: 'var(--sidebar-border)' }">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
+        <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-md flex items-center justify-center shadow-sm"
           :style="{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%)' }"
         >
           <span class="text-white font-bold text-sm">O</span>
@@ -112,7 +112,7 @@ const currentLangLabel = computed(() => {
         :key="item.path"
         @click="navigateTo(item.path)"
         :class=" [
-          'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative',
+          'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative',
           isActive(item.path)
             ? 'sidebar-active shadow-sm'
             : ''
@@ -132,7 +132,7 @@ const currentLangLabel = computed(() => {
         <!-- Tooltip for collapsed state -->
         <div
           v-if="isCollapsed"
-          class="absolute left-full ml-2 px-2 py-1 text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap border"
+          class="absolute left-full ml-2 rounded-md border px-2 py-1 text-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap"
           :style="{
             backgroundColor: 'var(--bg-elevated)',
             borderColor: 'var(--border-color)',
@@ -158,6 +158,7 @@ const currentLangLabel = computed(() => {
         <div
           v-if="isCollapsed"
           class="absolute left-full ml-2 px-2 py-1 text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap border"
+          
           :style="{
             backgroundColor: 'var(--bg-elevated)',
             borderColor: 'var(--border-color)',
@@ -172,7 +173,7 @@ const currentLangLabel = computed(() => {
       <button
         @click="appStore.toggleTheme"
         :class=" [
-          'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative hover:bg-[var(--accent-soft)]'
+          'w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative hover:bg-[var(--accent-soft)]'
         ]"
         :style="{ color: 'var(--sidebar-text)' }"
       >
@@ -184,7 +185,7 @@ const currentLangLabel = computed(() => {
 
         <div
           v-if="isCollapsed"
-          class="absolute left-full ml-2 px-2 py-1 text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap border"
+          class="absolute left-full ml-2 rounded-md border px-2 py-1 text-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap"
           :style="{
             backgroundColor: 'var(--bg-elevated)',
             borderColor: 'var(--border-color)',
@@ -198,7 +199,7 @@ const currentLangLabel = computed(() => {
       <!-- Logout -->
       <button
         @click="handleLogout"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative hover:bg-red-500/10 hover:text-red-400"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative hover:bg-red-500/10 hover:text-red-400"
         :style="{ color: 'var(--sidebar-text)' }"
       >
         <LogOut class="w-5 h-5 flex-shrink-0" />
@@ -206,7 +207,7 @@ const currentLangLabel = computed(() => {
 
         <div
           v-if="isCollapsed"
-          class="absolute left-full ml-2 px-2 py-1 text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap border"
+          class="absolute left-full ml-2 rounded-md border px-2 py-1 text-sm opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap"
           :style="{
             backgroundColor: 'var(--bg-elevated)',
             borderColor: 'var(--border-color)',
@@ -220,7 +221,7 @@ const currentLangLabel = computed(() => {
       <!-- Collapse toggle -->
       <button
         @click="appStore.toggleSidebar"
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 hover:bg-[var(--accent-soft)]"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 hover:bg-[var(--accent-soft)]"
         :style="{ color: 'var(--sidebar-text)' }"
       >
         <PanelLeftClose v-if="!isCollapsed" class="w-5 h-5 flex-shrink-0" />

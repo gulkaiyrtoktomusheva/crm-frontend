@@ -164,8 +164,12 @@
 
   "courses": {
     "title": "Курсы",
+    "overline": "УПРАВЛЕНИЕ ОБУЧЕНИЕМ",
+    "subtitle": "Управление расписанием курсов, ценой и текущим набором в едином рабочем реестре.",
     "coursesCount": "{count} курсов",
+    "recordsCount": "{count} записей",
     "course": "Курс",
+    "courseId": "Курс #{id}",
     "newCourse": "Новый курс",
     "editCourse": "Редактировать курс",
     "name": "Название курса",
@@ -181,6 +185,9 @@
     "statusActive": "Активный",
     "statusCompleted": "Завершен",
     "statusCancelled": "Отменен",
+    "activeHint": "Идут сейчас",
+    "plannedHint": "Ожидают запуска",
+    "completedHint": "Завершены",
     "courseCreated": "Курс создан",
     "courseUpdated": "Курс обновлен",
     "courseDeleted": "Курс удален",

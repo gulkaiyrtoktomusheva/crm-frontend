@@ -164,8 +164,12 @@
 
   "courses": {
     "title": "Courses",
+    "overline": "LEARNING OPERATIONS",
+    "subtitle": "Manage course schedules, pricing, and the current intake in one working register.",
     "coursesCount": "{count} courses",
+    "recordsCount": "{count} records",
     "course": "Course",
+    "courseId": "Course #{id}",
     "newCourse": "New Course",
     "editCourse": "Edit Course",
     "name": "Course name",
@@ -181,6 +185,9 @@
     "statusActive": "Active",
     "statusCompleted": "Completed",
     "statusCancelled": "Cancelled",
+    "activeHint": "Running now",
+    "plannedHint": "Waiting to start",
+    "completedHint": "Finished",
     "courseCreated": "Course created",
     "courseUpdated": "Course updated",
     "courseDeleted": "Course deleted",

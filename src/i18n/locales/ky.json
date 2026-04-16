@@ -164,8 +164,12 @@
 
   "courses": {
     "title": "Курстар",
+    "overline": "ОКУУНУ БАШКАРУУ",
+    "subtitle": "Курстардын графигин, баасын жана учурдагы кабыл алууну бирдиктүү реестрде башкарыңыз.",
     "coursesCount": "{count} курс",
+    "recordsCount": "{count} жазуу",
     "course": "Курс",
+    "courseId": "Курс #{id}",
     "newCourse": "Жаңы курс",
     "editCourse": "Курсту өзгөртүү",
     "name": "Курстун аталышы",
@@ -181,6 +185,9 @@
     "statusActive": "Активдүү",
     "statusCompleted": "Аяктаган",
     "statusCancelled": "Жокко чыгарылган",
+    "activeHint": "Азыр өтүп жатат",
+    "plannedHint": "Башталышын күтүп жатат",
+    "completedHint": "Аяктаган",
     "courseCreated": "Курс түзүлдү",
     "courseUpdated": "Курс жаңыртылды",
     "courseDeleted": "Курс өчүрүлдү",

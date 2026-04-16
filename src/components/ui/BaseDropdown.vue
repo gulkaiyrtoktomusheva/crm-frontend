@@ -52,7 +52,7 @@ onUnmounted(() => {
       <div
         v-if="isOpen"
         :class="[
-          'absolute z-50 mt-2 w-48 rounded-xl border shadow-lg py-1',
+          'absolute z-50 mt-2 w-48 rounded-md border py-1 shadow-lg',
           align === 'right' ? 'right-0' : 'left-0'
         ]"
         :style="{

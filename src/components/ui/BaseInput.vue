@@ -20,7 +20,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const inputClasses = computed(() => {
-  const base = 'w-full rounded-xl border bg-[var(--bg-tertiary)] px-4 py-2.5 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] input-focus'
+  const base = 'w-full rounded-md border bg-[var(--bg-tertiary)] px-4 py-2.5 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] input-focus'
   const borderClass = props.error
     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
     : 'border-[var(--border-color)] focus:border-accent focus:ring-accent/20'
