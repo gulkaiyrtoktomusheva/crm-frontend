@@ -1,140 +1,230 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { Calendar, Eye, Pencil, Plus, Trash2, Users } from 'lucide-vue-next'
 import { mockExamsApi } from '@/api/mockExams'
 import { useToast } from '@/composables/useToast'
-import BaseCard from '@/components/ui/BaseCard.vue'
+import { useConfirm } from '@/composables/useConfirm'
+import { useAuthStore } from '@/stores/auth'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseModal from '@/components/ui/BaseModal.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
+import BaseSearchInput from '@/components/ui/BaseSearchInput.vue'
 import BaseSkeleton from '@/components/ui/BaseSkeleton.vue'
-import BaseEmptyState from '@/components/ui/BaseEmptyState.vue'
-import { Plus, FileText, Calendar, Users } from 'lucide-vue-next'
+import BaseTable from '@/components/ui/BaseTable.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const toast = useToast()
+const confirm = useConfirm()
+const authStore = useAuthStore()
 
 const mockExams = ref([])
 const loading = ref(true)
 const showModal = ref(false)
 const modalLoading = ref(false)
+const editingExam = ref(null)
+const search = ref('')
 
 const form = ref({
   title: '',
   examDate: ''
 })
 
+const canCreate = computed(() => authStore.hasPermission('MOCK_EXAM_CREATE'))
+const canUpdate = computed(() => authStore.hasPermission('MOCK_EXAM_UPDATE'))
+const canDelete = computed(() => authStore.hasPermission('MOCK_EXAM_DELETE'))
+
+const columns = computed(() => [
+  { key: 'title', label: t('mockExams.examTitle'), width: '38%' },
+  { key: 'examDate', label: t('mockExams.examDate'), width: '22%' },
+  { key: 'participantCount', label: t('mockExams.participants'), width: '18%' },
+  { key: 'actions', label: '', width: '132px' }
+])
+
+const filteredExams = computed(() => {
+  const query = search.value.trim().toLowerCase()
+  if (!query) return mockExams.value
+
+  return mockExams.value.filter((exam) => {
+    const haystack = [exam.title, exam.examDate].filter(Boolean).join(' ').toLowerCase()
+    return haystack.includes(query)
+  })
+})
+
+onMounted(fetchExams)
+
 async function fetchExams() {
   loading.value = true
   try {
     mockExams.value = await mockExamsApi.getAll()
-  } catch (e) {
+  } catch (error) {
     toast.error(t('mockExams.failedLoad'))
   } finally {
     loading.value = false
   }
 }
 
-onMounted(fetchExams)
-
 function formatDate(date) {
   if (!date) return '-'
   return new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+function openCreateModal() {
+  editingExam.value = null
+  form.value = { title: '', examDate: '' }
+  showModal.value = true
+}
+
+function openEditModal(exam) {
+  editingExam.value = exam
+  form.value = {
+    title: exam.title || '',
+    examDate: exam.examDate || ''
+  }
+  showModal.value = true
+}
+
+function closeModal() {
+  editingExam.value = null
+  showModal.value = false
+}
+
+function viewExam(exam) {
+  router.push(`/mock-exams/${exam.id}`)
+}
+
 async function handleSubmit() {
-  if (!form.value.title || !form.value.examDate) {
+  if (!form.value.title?.trim() || !form.value.examDate) {
     toast.warning(t('mockExams.fillAllFields'))
     return
   }
 
   modalLoading.value = true
   try {
-    await mockExamsApi.create(form.value)
-    toast.success(t('mockExams.mockExamCreated'))
-    showModal.value = false
-    form.value = { title: '', examDate: '' }
-    fetchExams()
-  } catch (e) {
-    toast.error(t('mockExams.failedCreate'))
+    if (editingExam.value) {
+      await mockExamsApi.update(editingExam.value.id, {
+        title: form.value.title.trim(),
+        examDate: form.value.examDate
+      })
+      toast.success(t('mockExams.mockExamUpdated'))
+    } else {
+      await mockExamsApi.create({
+        title: form.value.title.trim(),
+        examDate: form.value.examDate
+      })
+      toast.success(t('mockExams.mockExamCreated'))
+    }
+
+    closeModal()
+    await fetchExams()
+  } catch (error) {
+    toast.error(editingExam.value ? t('mockExams.failedUpdate') : t('mockExams.failedCreate'))
   } finally {
     modalLoading.value = false
   }
 }
 
-function viewExam(exam) {
-  router.push(`/mock-exams/${exam.id}`)
+async function handleDelete(exam) {
+  const confirmed = await confirm.confirm({
+    title: t('mockExams.deleteMockExam'),
+    message: t('mockExams.deleteConfirm', { name: exam.title }),
+    confirmText: t('common.delete'),
+    cancelText: t('common.cancel'),
+    variant: 'danger'
+  })
+
+  if (!confirmed) return
+
+  try {
+    await mockExamsApi.delete(exam.id)
+    toast.success(t('mockExams.mockExamDeleted'))
+    await fetchExams()
+  } catch (error) {
+    toast.error(t('mockExams.failedDelete'))
+  }
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ t('mockExams.title') }}</h1>
-        <p class="text-[var(--text-secondary)] mt-1">
-          {{ t('mockExams.examsCount', { count: mockExams.length }) }}
+        <p class="mt-1 text-[var(--text-secondary)]">
+          {{ t('mockExams.examsCount', { count: filteredExams.length }) }}
         </p>
       </div>
 
-      <BaseButton @click="showModal = true">
-        <Plus class="w-4 h-4 mr-2" />
-        {{ t('mockExams.newMockExam') }}
-      </BaseButton>
-    </div>
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <BaseSearchInput
+          v-model="search"
+          :placeholder="t('mockExams.searchExams')"
+          class="w-full sm:w-72"
+        />
 
-    <!-- Loading -->
-    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div v-for="i in 3" :key="i" class="bg-[var(--bg-secondary)] rounded-2xl border border-white/5 p-6">
-        <BaseSkeleton height="1.5rem" width="60%" class="mb-4" />
-        <BaseSkeleton height="1rem" width="40%" />
+        <BaseButton v-if="canCreate" @click="openCreateModal">
+          <Plus class="mr-2 h-4 w-4" />
+          {{ t('mockExams.newMockExam') }}
+        </BaseButton>
       </div>
     </div>
 
-    <!-- Empty state -->
-    <BaseEmptyState
-      v-else-if="mockExams.length === 0"
-      :icon="FileText"
-      :title="t('mockExams.noExams')"
-      :description="t('mockExams.noExamsDescription')"
-    >
-      <template #action>
-        <BaseButton @click="showModal = true">
-          <Plus class="w-4 h-4 mr-2" />
-          {{ t('mockExams.createMockExam') }}
-        </BaseButton>
-      </template>
-    </BaseEmptyState>
-
-    <!-- Exams grid -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <BaseCard
-        v-for="exam in mockExams"
-        :key="exam.id"
-        hoverable
-        @click="viewExam(exam)"
+    <div class="overflow-hidden rounded-2xl border border-white/5 bg-[var(--bg-secondary)]">
+      <BaseTable
+        :columns="columns"
+        :data="filteredExams"
+        :loading="loading"
+        :empty-text="t('mockExams.noExams')"
+        table-layout="auto"
+        table-class="min-w-[820px]"
       >
-        <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-3">{{ exam.title }}</h3>
+        <template #title="{ row }">
+          <div class="flex min-w-0 items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+              <Calendar class="h-5 w-5" />
+            </div>
+            <div class="min-w-0">
+              <p class="truncate font-medium text-[var(--text-primary)]">{{ row.title }}</p>
+              <p class="text-xs text-[var(--text-secondary)]">#{{ row.id }}</p>
+            </div>
+          </div>
+        </template>
 
-        <div class="space-y-2 text-sm text-[var(--text-secondary)]">
-          <div class="flex items-center gap-2">
-            <Calendar class="w-4 h-4" />
-            <span>{{ formatDate(exam.examDate) }}</span>
+        <template #examDate="{ row }">
+          <span class="whitespace-nowrap text-[var(--text-secondary)]">{{ formatDate(row.examDate) }}</span>
+        </template>
+
+        <template #participantCount="{ row }">
+          <div class="flex items-center gap-2 text-[var(--text-secondary)]">
+            <Users class="h-4 w-4" />
+            <span>{{ row.participantCount || 0 }}</span>
           </div>
-          <div class="flex items-center gap-2">
-            <Users class="w-4 h-4" />
-            <span>{{ exam.participantCount || 0 }} {{ t('common.participants') }}</span>
+        </template>
+
+        <template #actions="{ row }">
+          <div class="flex items-center justify-end gap-2">
+            <BaseButton variant="ghost" size="sm" icon @click="viewExam(row)">
+              <Eye class="h-4 w-4" />
+            </BaseButton>
+            <BaseButton v-if="canUpdate" variant="ghost" size="sm" icon @click="openEditModal(row)">
+              <Pencil class="h-4 w-4" />
+            </BaseButton>
+            <BaseButton v-if="canDelete" variant="danger" size="sm" icon @click="handleDelete(row)">
+              <Trash2 class="h-4 w-4" />
+            </BaseButton>
           </div>
-        </div>
-      </BaseCard>
+        </template>
+      </BaseTable>
     </div>
 
-    <!-- Create modal -->
-    <BaseModal :show="showModal" :title="t('mockExams.newMockExam')" @close="showModal = false">
-      <form @submit.prevent="handleSubmit" class="space-y-4">
+    <BaseModal
+      :show="showModal"
+      :title="editingExam ? t('mockExams.editMockExam') : t('mockExams.newMockExam')"
+      @close="closeModal"
+    >
+      <form class="space-y-4" @submit.prevent="handleSubmit">
         <BaseInput
           v-model="form.title"
           :label="t('mockExams.examTitle')"
@@ -148,8 +238,10 @@ function viewExam(exam) {
       </form>
 
       <template #footer>
-        <BaseButton variant="ghost" @click="showModal = false">{{ t('common.cancel') }}</BaseButton>
-        <BaseButton :loading="modalLoading" @click="handleSubmit">{{ t('common.create') }}</BaseButton>
+        <BaseButton variant="ghost" @click="closeModal">{{ t('common.cancel') }}</BaseButton>
+        <BaseButton :loading="modalLoading" @click="handleSubmit">
+          {{ editingExam ? t('common.save') : t('common.create') }}
+        </BaseButton>
       </template>
     </BaseModal>
   </div>

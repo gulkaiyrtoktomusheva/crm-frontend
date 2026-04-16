@@ -9,6 +9,7 @@ import {
   Target,
   GraduationCap,
   BookOpen,
+  FileText,
   ClipboardList,
   Wallet,
   Shield,
@@ -33,6 +34,7 @@ const menuItems = computed(() => [
   { icon: GraduationCap, label: t('sidebar.students'), path: '/students', permission: 'STUDENT_VIEW' },
   { icon: BookOpen, label: t('sidebar.courses'), path: '/courses', permission: 'COURSE_VIEW' },
   { icon: ClipboardList, label: t('sidebar.enrollments'), path: '/enrollments', permission: 'STUDENT_VIEW' },
+  { icon: FileText, label: t('sidebar.mockExams'), path: '/mock-exams', permission: 'MOCK_EXAM_VIEW' },
   { icon: Wallet, label: t('sidebar.payments'), path: '/payments', permission: 'PAYMENT_VIEW' },
   { icon: Shield, label: t('sidebar.roles'), path: '/roles', permission: 'ROLE_VIEW' },
   { icon: UserRoundCog, label: t('sidebar.users'), path: '/users', permission: 'USER_VIEW' }

@@ -58,13 +58,13 @@ const routes = [
         path: 'mock-exams',
         name: 'mock-exams',
         component: () => import('@/views/mockExams/MockExamsView.vue'),
-        meta: { title: 'Mock Exams' }
+        meta: { title: 'Mock Exams', requiredPermission: 'MOCK_EXAM_VIEW' }
       },
       {
         path: 'mock-exams/:id',
         name: 'mock-exam-detail',
         component: () => import('@/views/mockExams/MockExamDetailView.vue'),
-        meta: { title: 'Mock Exam Results' }
+        meta: { title: 'Mock Exam Results', requiredPermission: 'MOCK_EXAM_VIEW' }
       },
       {
         path: 'payments',

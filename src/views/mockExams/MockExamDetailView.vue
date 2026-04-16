@@ -1,52 +1,97 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { ArrowLeft, Save, Users } from 'lucide-vue-next'
 import { mockExamsApi } from '@/api/mockExams'
 import { studentsApi } from '@/api/students'
 import { subjectsApi } from '@/api/subjects'
 import { useToast } from '@/composables/useToast'
-import BaseCard from '@/components/ui/BaseCard.vue'
+import { useAuthStore } from '@/stores/auth'
 import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseCard from '@/components/ui/BaseCard.vue'
+import BaseInput from '@/components/ui/BaseInput.vue'
+import BaseSearchInput from '@/components/ui/BaseSearchInput.vue'
+import BaseSelect from '@/components/ui/BaseSelect.vue'
 import BaseSkeleton from '@/components/ui/BaseSkeleton.vue'
-import { ArrowLeft, Save } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const authStore = useAuthStore()
 
 const exam = ref(null)
 const students = ref([])
 const subjects = ref([])
 const loading = ref(true)
 const saving = ref(false)
-const scores = ref({})
+const scoreMap = ref({})
+const studentSearch = ref('')
+const selectedSubjectId = ref(null)
 
-onMounted(async () => {
+const canManageScores = computed(() => authStore.hasPermission('MOCK_EXAM_SCORE_MANAGE'))
+
+const subjectOptions = computed(() => [
+  { value: null, label: t('mockExams.allSubjects') },
+  ...subjects.value.map((subject) => ({ value: subject.id, label: subject.name }))
+])
+
+const visibleSubjects = computed(() => {
+  if (!selectedSubjectId.value) return subjects.value
+  return subjects.value.filter((subject) => subject.id === selectedSubjectId.value)
+})
+
+const filteredStudents = computed(() => {
+  const query = studentSearch.value.trim().toLowerCase()
+  if (!query) return students.value
+
+  return students.value.filter((student) => (student.fullName || '').toLowerCase().includes(query))
+})
+
+onMounted(fetchPageData)
+
+async function fetchAllStudents() {
+  const result = []
+  let page = 0
+  let totalPages = 1
+
+  while (page < totalPages) {
+    const response = await studentsApi.getAll({ page, size: 100 })
+    const items = response.content || response || []
+    result.push(...items)
+    totalPages = response.totalPages || 1
+    page += 1
+  }
+
+  return result
+}
+
+async function fetchPageData() {
+  loading.value = true
   try {
-    const [examData, studentsData, subjectsData] = await Promise.all([
+    const [examData, scoresData, studentsData, subjectsData] = await Promise.all([
       mockExamsApi.getById(route.params.id),
-      studentsApi.getAll({ size: 100 }),
+      mockExamsApi.getScores(route.params.id),
+      fetchAllStudents(),
       subjectsApi.getAll()
     ])
 
     exam.value = examData
-    students.value = studentsData.content || studentsData
+    students.value = studentsData
     subjects.value = subjectsData
+    scoreMap.value = {}
 
-    if (examData.scores) {
-      examData.scores.forEach(s => {
-        scores.value[`${s.studentId}-${s.subjectId}`] = s.score
-      })
-    }
-  } catch (e) {
+    scoresData.forEach((score) => {
+      scoreMap.value[`${score.studentId}-${score.subjectId}`] = score.score ?? ''
+    })
+  } catch (error) {
     toast.error(t('mockExams.failedLoadExam'))
     router.push('/mock-exams')
   } finally {
     loading.value = false
   }
-})
+}
 
 function formatDate(date) {
   if (!date) return '-'
@@ -54,36 +99,55 @@ function formatDate(date) {
 }
 
 function getScore(studentId, subjectId) {
-  return scores.value[`${studentId}-${subjectId}`] || ''
+  const value = scoreMap.value[`${studentId}-${subjectId}`]
+  return value ?? ''
 }
 
 function setScore(studentId, subjectId, value) {
   const key = `${studentId}-${subjectId}`
+
   if (value === '' || value === null) {
-    delete scores.value[key]
-  } else {
-    scores.value[key] = parseInt(value) || 0
+    delete scoreMap.value[key]
+    return
   }
+
+  const parsed = Number(value)
+  scoreMap.value[key] = Number.isNaN(parsed) ? '' : parsed
+}
+
+function getStudentAverage(studentId) {
+  const values = subjects.value
+    .map((subject) => scoreMap.value[`${studentId}-${subject.id}`])
+    .filter((score) => typeof score === 'number')
+
+  if (!values.length) return '-'
+
+  return Math.round(values.reduce((sum, score) => sum + score, 0) / values.length)
 }
 
 async function saveScores() {
-  const scoreEntries = []
+  const scores = Object.entries(scoreMap.value)
+    .filter(([, score]) => score !== '' && score !== null && score !== undefined)
+    .map(([key, score]) => {
+      const [studentId, subjectId] = key.split('-').map(Number)
+      return {
+        studentId,
+        subjectId,
+        score: Number(score)
+      }
+    })
 
-  for (const [key, score] of Object.entries(scores.value)) {
-    const [studentId, subjectId] = key.split('-').map(Number)
-    scoreEntries.push({ studentId, subjectId, score })
-  }
-
-  if (scoreEntries.length === 0) {
+  if (!scores.length) {
     toast.warning(t('mockExams.noScoresToSave'))
     return
   }
 
   saving.value = true
   try {
-    await mockExamsApi.addScores(exam.value.id, { scores: scoreEntries })
+    await mockExamsApi.addScores(exam.value.id, { scores })
     toast.success(t('mockExams.scoresSaved'))
-  } catch (e) {
+    await fetchPageData()
+  } catch (error) {
     toast.error(t('mockExams.failedSaveScores'))
   } finally {
     saving.value = false
@@ -93,71 +157,108 @@ async function saveScores() {
 
 <template>
   <div class="space-y-6">
-    <!-- Back button -->
     <button
       @click="router.push('/mock-exams')"
-      class="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors"
+      class="flex items-center gap-2 text-[var(--text-secondary)] transition-colors hover:text-white"
     >
-      <ArrowLeft class="w-4 h-4" />
+      <ArrowLeft class="h-4 w-4" />
       {{ t('mockExams.backToMockExams') }}
     </button>
 
-    <!-- Loading -->
     <template v-if="loading">
       <BaseCard>
         <BaseSkeleton height="2rem" width="40%" class="mb-4" />
-        <BaseSkeleton height="1rem" width="20%" />
+        <BaseSkeleton height="1rem" width="25%" />
       </BaseCard>
     </template>
 
     <template v-else-if="exam">
-      <!-- Exam info -->
       <BaseCard>
-        <div class="flex items-start justify-between">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <h1 class="text-2xl font-bold text-[var(--text-primary)]">{{ exam.title }}</h1>
-            <p class="text-[var(--text-secondary)] mt-1">{{ formatDate(exam.examDate) }}</p>
+            <div class="mt-3 flex flex-wrap items-center gap-4 text-sm text-[var(--text-secondary)]">
+              <span>{{ t('mockExams.examDate') }}: {{ formatDate(exam.examDate) }}</span>
+              <span class="flex items-center gap-2">
+                <Users class="h-4 w-4" />
+                {{ exam.participantCount || 0 }} {{ t('mockExams.participants') }}
+              </span>
+            </div>
           </div>
-          <BaseButton :loading="saving" @click="saveScores">
-            <Save class="w-4 h-4 mr-2" />
+
+          <BaseButton v-if="canManageScores" :loading="saving" @click="saveScores">
+            <Save class="mr-2 h-4 w-4" />
             {{ t('mockExams.saveScores') }}
           </BaseButton>
         </div>
       </BaseCard>
 
-      <!-- Score entry table -->
-      <BaseCard padding="none">
+      <BaseCard>
+        <div class="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-[var(--text-primary)]">{{ t('mockExams.scoresMatrix') }}</h2>
+            <p class="mt-1 text-sm text-[var(--text-secondary)]">{{ t('mockExams.scoresMatrixHint') }}</p>
+          </div>
+
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <BaseSearchInput
+              v-model="studentSearch"
+              :placeholder="t('mockExams.searchStudents')"
+              class="w-full sm:w-72"
+            />
+            <BaseSelect
+              v-model="selectedSubjectId"
+              :options="subjectOptions"
+              :placeholder="t('mockExams.allSubjects')"
+              class="w-full sm:w-64"
+            />
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
-          <table class="w-full">
+          <table class="min-w-[980px] w-full">
             <thead>
               <tr class="bg-[var(--bg-tertiary)]">
-                <th class="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase sticky left-0 bg-[var(--bg-tertiary)]">
+                <th class="sticky left-0 z-10 bg-[var(--bg-tertiary)] px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
                   {{ t('students.student') }}
                 </th>
                 <th
-                  v-for="subject in subjects"
+                  v-for="subject in visibleSubjects"
                   :key="subject.id"
-                  class="px-4 py-3 text-center text-xs font-medium text-[var(--text-secondary)] uppercase min-w-[100px]"
+                  class="min-w-[140px] px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]"
                 >
                   {{ subject.name }}
+                </th>
+                <th class="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+                  {{ t('mockExams.averageScore') }}
                 </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
-              <tr v-for="student in students" :key="student.id" class="table-row">
-                <td class="px-4 py-3 font-medium text-[var(--text-primary)] sticky left-0 bg-[var(--bg-secondary)]">
+              <tr v-if="!filteredStudents.length">
+                <td :colspan="visibleSubjects.length + 2" class="px-4 py-12 text-center text-[var(--text-secondary)]">
+                  {{ t('mockExams.noStudentsFound') }}
+                </td>
+              </tr>
+
+              <tr v-for="student in filteredStudents" :key="student.id" class="table-row">
+                <td class="sticky left-0 bg-[var(--bg-secondary)] px-4 py-3 font-medium text-[var(--text-primary)]">
                   {{ student.fullName }}
                 </td>
-                <td v-for="subject in subjects" :key="subject.id" class="px-4 py-3">
-                  <input
+                <td
+                  v-for="subject in visibleSubjects"
+                  :key="subject.id"
+                  class="px-4 py-3"
+                >
+                  <BaseInput
+                    :model-value="getScore(student.id, subject.id)"
                     type="number"
-                    min="0"
-                    max="100"
-                    :value="getScore(student.id, subject.id)"
-                    @input="setScore(student.id, subject.id, $event.target.value)"
-                    class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-center text-[var(--text-primary)] focus:border-accent focus:outline-none"
-                    placeholder="-"
+                    :disabled="!canManageScores"
+                    @update:model-value="setScore(student.id, subject.id, $event)"
                   />
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-[var(--text-primary)]">
+                  {{ getStudentAverage(student.id) }}
                 </td>
               </tr>
             </tbody>

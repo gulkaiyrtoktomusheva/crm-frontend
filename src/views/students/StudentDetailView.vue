@@ -37,6 +37,8 @@ const tabs = computed(() => [
   { id: 'scores', label: t('students.mockScores') }
 ])
 
+const studentCourses = computed(() => student.value?.finance?.courses || [])
+
 onMounted(async () => {
   await fetchStudent()
 })
@@ -61,6 +63,22 @@ const attendancePercent = computed(() => {
   if (!student.value?.attendancePercentage) return 0
   return Math.round(student.value.attendancePercentage)
 })
+
+function formatCurrency(value) {
+  if (value === null || value === undefined) return `0 ${t('common.currency')}`
+  return `${new Intl.NumberFormat('ru-RU').format(value)} ${t('common.currency')}`
+}
+
+function getEnrollmentStatusLabel(status) {
+  const labels = {
+    ACTIVE: t('enrollments.statusActive'),
+    COMPLETED: t('enrollments.statusCompleted'),
+    CANCELLED: t('enrollments.statusCancelled'),
+    PAUSED: t('enrollments.statusPaused')
+  }
+
+  return labels[status] || status || '-'
+}
 
 async function handleSubmit(data) {
   modalLoading.value = true
@@ -207,18 +225,32 @@ async function handleSubmit(data) {
         <div class="p-6">
           <!-- Attendance tab -->
           <div v-if="activeTab === 'attendance'">
-            <div v-if="student.groups?.length" class="space-y-4">
-              <div v-for="group in student.groups" :key="group.id" class="p-4 bg-white/5 rounded-xl">
-                <div class="flex items-center justify-between mb-2">
+            <div v-if="studentCourses.length" class="space-y-4">
+              <div
+                v-for="course in studentCourses"
+                :key="course.studentCourseId || course.courseId"
+                class="rounded-xl bg-white/5 p-4"
+              >
+                <div class="mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p class="font-medium text-[var(--text-primary)]">{{ group.name }}</p>
-                    <p class="text-sm text-[var(--text-secondary)]">{{ group.subjectName }}</p>
+                    <p class="font-medium text-[var(--text-primary)]">{{ course.courseName }}</p>
+                    <p class="text-sm text-[var(--text-secondary)]">
+                      {{ formatDate(course.startDate) }} - {{ formatDate(course.endDate) }}
+                    </p>
                   </div>
+                  <BaseBadge variant="default">
+                    {{ getEnrollmentStatusLabel(course.status) }}
+                  </BaseBadge>
+                </div>
+
+                <div class="flex flex-wrap gap-4 text-sm text-[var(--text-secondary)]">
+                  <span>{{ t('enrollments.finalPrice') }}: {{ formatCurrency(course.finalPrice) }}</span>
+                  <span>{{ t('courses.course') }} #{{ course.courseId }}</span>
                 </div>
               </div>
             </div>
             <p v-else class="text-[var(--text-secondary)] text-center py-8">
-              {{ t('students.noGroupsAssigned') }}
+              {{ t('enrollments.noEnrollments') }}
             </p>
           </div>
 
