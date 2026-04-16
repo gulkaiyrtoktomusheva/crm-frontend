@@ -258,19 +258,19 @@ function formatDate(date) {
               <BaseButton
                 variant="ghost"
                 size="sm"
+                :title="t('common.edit')"
                 @click="openEditModal(row)"
               >
-                <Pencil class="mr-1 h-4 w-4" />
-                {{ t('common.edit') }}
+                <Pencil class="h-4 w-4" />
               </BaseButton>
 
               <BaseButton
                 variant="danger"
                 size="sm"
+                :title="t('common.delete')"
                 @click="handleDelete(row)"
               >
-                <Trash2 class="mr-1 h-4 w-4" />
-                {{ t('common.delete') }}
+                <Trash2 class="h-4 w-4" />
               </BaseButton>
             </div>
           </template>

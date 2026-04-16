@@ -414,8 +414,8 @@ async function saveAttendance() {
           :class="[
             'rounded-xl border px-4 py-2 text-sm font-medium transition-colors',
             activeTab === tab.value
-              ? 'border-accent bg-accent/10 text-white'
-              : 'border-white/10 bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-white'
+              ? 'border-accent bg-[var(--accent-soft)] text-[var(--accent)] shadow-sm'
+              : 'border-[var(--border-color)] bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:border-accent/30 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
           ]"
           @click="activeTab = tab.value"
         >
@@ -521,7 +521,9 @@ async function saveAttendance() {
                   type="button"
                   :class="[
                     'w-full rounded-2xl border p-4 text-left transition-colors',
-                    selectedLessonId === lesson.id ? 'border-accent bg-accent/10' : 'border-white/10 bg-white/5 hover:bg-white/10'
+                    selectedLessonId === lesson.id
+                      ? 'border-accent bg-[var(--accent-soft)] shadow-sm'
+                      : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-accent/30 hover:bg-[var(--bg-tertiary)]'
                   ]"
                   @click="selectedLessonId = lesson.id"
                 >

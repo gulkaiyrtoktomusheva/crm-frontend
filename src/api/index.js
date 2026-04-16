@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import { getApiErrorMessage } from '@/utils/apiError'
 
 const api = axios.create({
   baseURL: '/api',
@@ -26,6 +27,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    error.backendMessage = getApiErrorMessage(error, 'Request failed')
+    error.message = error.backendMessage
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')

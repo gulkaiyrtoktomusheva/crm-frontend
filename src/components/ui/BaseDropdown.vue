@@ -52,9 +52,13 @@ onUnmounted(() => {
       <div
         v-if="isOpen"
         :class="[
-          'absolute z-50 mt-2 w-48 rounded-xl bg-[var(--bg-secondary)] border border-white/10 shadow-lg py-1',
+          'absolute z-50 mt-2 w-48 rounded-xl border shadow-lg py-1',
           align === 'right' ? 'right-0' : 'left-0'
         ]"
+        :style="{
+          backgroundColor: 'var(--bg-elevated)',
+          borderColor: 'var(--border-color)'
+        }"
       >
         <slot :close="close" />
       </div>

@@ -35,7 +35,7 @@ defineProps({
           <th
             v-for="col in columns"
             :key="col.key"
-            class="px-4 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider first:rounded-tl-xl last:rounded-tr-xl"
+            class="px-4 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider first:rounded-tl-xl last:rounded-tr-xl"
             :style="col.width ? { width: col.width } : {}"
           >
             <slot :name="`header-${col.key}`" :column="col">
@@ -44,7 +44,7 @@ defineProps({
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-white/5">
+      <tbody class="divide-y" :style="{ borderColor: 'var(--border-color)' }">
         <!-- Loading state -->
         <template v-if="loading">
           <tr v-for="i in 5" :key="i">

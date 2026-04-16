@@ -23,10 +23,10 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const selectClasses = computed(() => {
-  const base = 'w-full bg-white/5 border rounded-xl px-4 py-2.5 text-[var(--text-primary)] appearance-none cursor-pointer input-focus pr-10'
+  const base = 'w-full appearance-none rounded-xl border bg-[var(--bg-tertiary)] px-4 py-2.5 pr-10 text-[var(--text-primary)] cursor-pointer input-focus'
   const borderClass = props.error
     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-    : 'border-white/10 focus:border-accent focus:ring-accent/20'
+    : 'border-[var(--border-color)] focus:border-accent focus:ring-accent/20'
 
   return [base, borderClass]
 })
@@ -55,12 +55,12 @@ function handleChange(event) {
         :class="selectClasses"
         @change="handleChange"
       >
-        <option value="" class="bg-[var(--bg-secondary)]">{{ placeholder }}</option>
+        <option value="" class="bg-[var(--bg-secondary)] text-[var(--text-primary)]">{{ placeholder }}</option>
         <option
           v-for="option in options"
           :key="option.value"
           :value="option.value"
-          class="bg-[var(--bg-secondary)]"
+          class="bg-[var(--bg-secondary)] text-[var(--text-primary)]"
         >
           {{ option.label }}
         </option>

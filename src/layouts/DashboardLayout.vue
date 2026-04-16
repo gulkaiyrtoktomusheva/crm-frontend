@@ -20,7 +20,7 @@ const mainClass = computed(() => [
     <div :class="mainClass">
       <AppHeader />
 
-      <main class="p-6">
+      <main class="px-6 py-5">
         <router-view v-slot="{ Component }">
           <transition name="page" mode="out-in">
             <component :is="Component" />

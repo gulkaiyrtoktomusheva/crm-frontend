@@ -93,13 +93,6 @@ async function handleLogin() {
             {{ t('login.signIn') }}
           </BaseButton>
         </form>
-
-        <!-- Demo credentials hint -->
-        <div class="mt-6 p-4 bg-white/5 rounded-xl">
-          <p class="text-xs text-[var(--text-secondary)] text-center">
-            Demo: admin@ortcrm.kg / admin123
-          </p>
-        </div>
       </div>
     </div>
   </div>

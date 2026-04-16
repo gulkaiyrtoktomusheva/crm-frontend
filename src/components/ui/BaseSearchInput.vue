@@ -12,7 +12,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'focus', 'mouseenter'])
 
 function clear() {
   emit('update:modelValue', '')
@@ -26,13 +26,15 @@ function clear() {
       :value="modelValue"
       :placeholder="placeholder"
       type="text"
-      class="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] input-focus"
+      class="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] pl-10 pr-10 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] input-focus"
       @input="$emit('update:modelValue', $event.target.value)"
+      @focus="$emit('focus', $event)"
+      @mouseenter="$emit('mouseenter', $event)"
     />
     <button
       v-if="modelValue"
       @click="clear"
-      class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10 text-[var(--text-secondary)] transition-colors"
+      class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)]"
     >
       <X class="w-4 h-4" />
     </button>

@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { studentsApi } from '@/api/students'
 import { useToast } from '@/composables/useToast'
+import { getApiErrorMessage } from '@/utils/apiError'
 import StudentStatusBadge from '@/components/students/StudentStatusBadge.vue'
 import StudentFormModal from '@/components/students/StudentFormModal.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
@@ -47,7 +48,7 @@ async function fetchStudent() {
   try {
     student.value = await studentsApi.getById(route.params.id)
   } catch (e) {
-    toast.error(t('students.failedLoadStudent'))
+    toast.error(getApiErrorMessage(e, t('students.failedLoadStudent')))
     router.push('/students')
   } finally {
     loading.value = false
@@ -87,7 +88,7 @@ async function handleSubmit(data) {
     showEditModal.value = false
     toast.success(t('students.studentUpdated'))
   } catch (e) {
-    toast.error(t('students.failedSave'))
+    toast.error(getApiErrorMessage(e, t('students.failedSave')))
   } finally {
     modalLoading.value = false
   }
@@ -99,7 +100,7 @@ async function handleSubmit(data) {
     <!-- Back button -->
     <button
       @click="router.push('/students')"
-      class="flex items-center gap-2 text-[var(--text-secondary)] hover:text-white transition-colors"
+      class="flex items-center gap-2 text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
     >
       <ArrowLeft class="w-4 h-4" />
       {{ t('students.backToStudents') }}
@@ -177,7 +178,7 @@ async function handleSubmit(data) {
         <BaseCard>
           <p class="text-sm text-[var(--text-secondary)]">{{ t('students.attendance') }}</p>
           <p class="text-2xl font-bold text-[var(--text-primary)] mt-1">{{ attendancePercent }}%</p>
-          <div class="mt-2 h-2 bg-white/5 rounded-full overflow-hidden">
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
             <div
               class="h-full bg-accent transition-all"
               :style="{ width: `${attendancePercent}%` }"
@@ -202,16 +203,16 @@ async function handleSubmit(data) {
 
       <!-- Tabs -->
       <BaseCard padding="none">
-        <div class="flex border-b border-white/5">
+        <div class="flex border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
           <button
             v-for="tab in tabs"
             :key="tab.id"
             @click="activeTab = tab.id"
             :class=" [
-              'px-6 py-4 text-sm font-medium transition-colors relative',
+              'relative px-6 py-4 text-sm font-medium transition-colors',
               activeTab === tab.id
-                ? 'text-white'
-                : 'text-[var(--text-secondary)] hover:text-white'
+                ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
             ]"
           >
             {{ tab.label }}
@@ -229,7 +230,7 @@ async function handleSubmit(data) {
               <div
                 v-for="course in studentCourses"
                 :key="course.studentCourseId || course.courseId"
-                class="rounded-xl bg-white/5 p-4"
+                class="rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] p-4"
               >
                 <div class="mb-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
@@ -260,7 +261,7 @@ async function handleSubmit(data) {
               <div
                 v-for="score in student.mockExamScores"
                 :key="score.id"
-                class="flex items-center justify-between p-4 bg-white/5 rounded-xl"
+                class="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-tertiary)] p-4"
               >
                 <div>
                   <p class="font-medium text-[var(--text-primary)]">{{ score.mockExamTitle }}</p>

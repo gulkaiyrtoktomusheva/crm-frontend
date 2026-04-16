@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { dashboardApi } from '@/api/dashboard'
 import { useToast } from '@/composables/useToast'
@@ -7,11 +7,8 @@ import StatCard from '@/components/dashboard/StatCard.vue'
 import BaseCard from '@/components/ui/BaseCard.vue'
 import BaseSkeleton from '@/components/ui/BaseSkeleton.vue'
 import {
-  Users,
   Target,
-  TrendingUp,
   Wallet,
-  AlertTriangle,
   GraduationCap
 } from 'lucide-vue-next'
 
@@ -19,6 +16,14 @@ const { t } = useI18n()
 const toast = useToast()
 const stats = ref(null)
 const loading = ref(true)
+
+const leadFunnelItems = computed(() => ([
+  { label: t('leads.statusNew'), value: stats.value?.leadStats?.newCount || 0, color: 'bg-sky-500' },
+  { label: t('leads.statusContacted'), value: stats.value?.leadStats?.contactedCount || 0, color: 'bg-cyan-500' },
+  { label: t('leads.statusThinking'), value: stats.value?.leadStats?.thinkingCount || 0, color: 'bg-violet-500' },
+  { label: t('leads.statusPaid'), value: stats.value?.leadStats?.paidCount || 0, color: 'bg-emerald-500' },
+  { label: t('leads.statusRejected'), value: stats.value?.leadStats?.rejectedCount || 0, color: 'bg-rose-500' }
+]))
 
 onMounted(async () => {
   try {
@@ -45,9 +50,9 @@ function formatCurrency(amount) {
     </div>
 
     <!-- Stats cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <template v-if="loading">
-        <div v-for="i in 4" :key="i" class="bg-[var(--bg-secondary)] rounded-2xl border border-white/5 p-6">
+        <div v-for="i in 3" :key="i" class="bg-[var(--bg-secondary)] rounded-2xl border border-white/5 p-6">
           <BaseSkeleton height="1rem" width="40%" class="mb-2" />
           <BaseSkeleton height="2.5rem" width="60%" />
         </div>
@@ -58,28 +63,21 @@ function formatCurrency(amount) {
           :title="t('dashboard.totalLeads')"
           :value="stats?.leadStats?.totalCount || 0"
           :icon="Target"
-          iconColor="text-blue-400 bg-blue-400/10"
+          iconColor="text-sky-500 bg-sky-500/10"
         />
 
         <StatCard
           :title="t('dashboard.activeStudents')"
           :value="stats?.activeStudents || 0"
           :icon="GraduationCap"
-          iconColor="text-emerald-400 bg-emerald-400/10"
-        />
-
-        <StatCard
-          :title="t('dashboard.atRiskStudents')"
-          :value="stats?.atRiskStudents || 0"
-          :icon="AlertTriangle"
-          iconColor="text-amber-400 bg-amber-400/10"
+          iconColor="text-emerald-500 bg-emerald-500/10"
         />
 
         <StatCard
           :title="t('dashboard.totalRevenue')"
           :value="formatCurrency(stats?.totalRevenue)"
           :icon="Wallet"
-          iconColor="text-accent bg-accent/10"
+          iconColor="text-[var(--accent)] bg-[var(--accent-soft)]"
         />
       </template>
     </div>
@@ -94,18 +92,12 @@ function formatCurrency(amount) {
 
       <div v-else class="space-y-3">
         <div
-          v-for="(item, index) in [
-            { label: t('leads.statusNew'), value: stats?.leadStats?.newCount || 0, color: 'bg-blue-500' },
-            { label: t('leads.statusContacted'), value: stats?.leadStats?.contactedCount || 0, color: 'bg-amber-500' },
-            { label: t('leads.statusThinking'), value: stats?.leadStats?.thinkingCount || 0, color: 'bg-purple-500' },
-            { label: t('leads.statusPaid'), value: stats?.leadStats?.paidCount || 0, color: 'bg-emerald-500' },
-            { label: t('leads.statusRejected'), value: stats?.leadStats?.rejectedCount || 0, color: 'bg-red-500' }
-          ]"
+          v-for="(item, index) in leadFunnelItems"
           :key="index"
           class="flex items-center gap-4"
         >
           <div class="w-24 text-sm text-[var(--text-secondary)]">{{ item.label }}</div>
-          <div class="flex-1 h-10 bg-white/5 rounded-xl overflow-hidden">
+          <div class="flex-1 h-10 overflow-hidden rounded-xl bg-[var(--bg-tertiary)]">
             <div
               :class="[item.color, 'h-full flex items-center px-3 text-white text-sm font-medium transition-all duration-500']"
               :style="{ width: `${Math.max((item.value / (stats?.leadStats?.totalCount || 1)) * 100, 5)}%` }"
@@ -118,42 +110,5 @@ function formatCurrency(amount) {
     </BaseCard>
 
     <!-- Quick stats -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <BaseCard>
-        <div class="flex items-center gap-4">
-          <div class="p-3 rounded-xl bg-emerald-500/10">
-            <TrendingUp class="w-6 h-6 text-emerald-400" />
-          </div>
-          <div>
-            <p class="text-sm text-[var(--text-secondary)]">{{ t('dashboard.totalGroups') }}</p>
-            <p class="text-2xl font-bold text-[var(--text-primary)]">{{ stats?.totalGroups || 0 }}</p>
-          </div>
-        </div>
-      </BaseCard>
-
-      <BaseCard>
-        <div class="flex items-center gap-4">
-          <div class="p-3 rounded-xl bg-amber-500/10">
-            <Wallet class="w-6 h-6 text-amber-400" />
-          </div>
-          <div>
-            <p class="text-sm text-[var(--text-secondary)]">{{ t('dashboard.pendingPayments') }}</p>
-            <p class="text-2xl font-bold text-[var(--text-primary)]">{{ stats?.pendingPayments || 0 }}</p>
-          </div>
-        </div>
-      </BaseCard>
-
-      <BaseCard>
-        <div class="flex items-center gap-4">
-          <div class="p-3 rounded-xl bg-red-500/10">
-            <AlertTriangle class="w-6 h-6 text-red-400" />
-          </div>
-          <div>
-            <p class="text-sm text-[var(--text-secondary)]">{{ t('dashboard.overduePayments') }}</p>
-            <p class="text-2xl font-bold text-[var(--text-primary)]">{{ stats?.overduePayments || 0 }}</p>
-          </div>
-        </div>
-      </BaseCard>
-    </div>
   </div>
 </template>

@@ -18,9 +18,12 @@ const breadcrumbs = computed(() => {
   const nameMap = {
     leads: t('sidebar.leads'),
     students: t('sidebar.students'),
-    groups: t('sidebar.groups'),
+    courses: t('sidebar.courses'),
+    enrollments: t('sidebar.enrollments'),
     'mock-exams': t('sidebar.mockExams'),
-    payments: t('sidebar.payments')
+    payments: t('sidebar.payments'),
+    roles: t('sidebar.roles'),
+    users: t('sidebar.users')
   }
 
   let currentPath = ''
@@ -38,7 +41,10 @@ const breadcrumbs = computed(() => {
 </script>
 
 <template>
-  <header class="h-16 flex items-center justify-between px-6 border-b border-white/5">
+  <header
+    class="sticky top-0 z-30 h-16 flex items-center justify-between px-6 border-b backdrop-blur-sm"
+    :style="{ backgroundColor: 'var(--header-bg)', borderColor: 'var(--border-color)' }"
+  >
     <!-- Breadcrumbs -->
     <nav class="flex items-center text-sm">
       <template v-for="(crumb, i) in breadcrumbs" :key="crumb.path">
@@ -46,7 +52,7 @@ const breadcrumbs = computed(() => {
         <router-link
           :to="crumb.path"
           :class=" [
-            'hover:text-white transition-colors',
+            'transition-colors',
             i === breadcrumbs.length - 1 ? 'text-[var(--text-primary)] font-medium' : 'text-[var(--text-secondary)]'
           ]"
         >
@@ -58,7 +64,7 @@ const breadcrumbs = computed(() => {
     <!-- Right side -->
     <div class="flex items-center gap-3">
       <!-- Notifications -->
-      <button class="p-2 rounded-xl hover:bg-white/5 text-[var(--text-secondary)] hover:text-white transition-colors relative">
+      <button class="p-2 rounded-xl text-[var(--text-secondary)] transition-colors relative hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]">
         <Bell class="w-5 h-5" />
         <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
       </button>
@@ -66,7 +72,7 @@ const breadcrumbs = computed(() => {
       <!-- User dropdown -->
       <BaseDropdown align="right">
         <template #trigger>
-          <button class="flex items-center gap-3 p-1.5 rounded-xl hover:bg-white/5 transition-colors">
+          <button class="flex items-center gap-3 p-1.5 rounded-xl transition-colors hover:bg-[var(--accent-soft)]">
             <BaseAvatar :name="authStore.user?.fullName || 'User'" size="sm" />
             <div class="text-left hidden sm:block">
               <p class="text-sm font-medium text-[var(--text-primary)]">
@@ -82,7 +88,7 @@ const breadcrumbs = computed(() => {
         <template #default="{ close }">
           <div class="py-1">
             <button
-              class="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] hover:bg-white/5 hover:text-white transition-colors"
+              class="w-full flex items-center gap-2 px-4 py-2 text-sm text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
               @click="close"
             >
               <User class="w-4 h-4" />

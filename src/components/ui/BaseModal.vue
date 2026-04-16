@@ -12,6 +12,10 @@ const props = defineProps({
     type: String,
     default: 'md',
     validator: (v) => ['sm', 'md', 'lg', 'xl'].includes(v)
+  },
+  bodyOverflowVisible: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -50,34 +54,45 @@ function handleKeydown(e) {
     <Transition name="modal">
       <div
         v-if="show"
-        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/60 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-slate-950/38 backdrop-blur-sm"
         @click="handleBackdropClick"
         @keydown="handleKeydown"
       >
         <div
           :class="[
-            'my-auto flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-hidden bg-[var(--bg-secondary)] rounded-2xl border border-white/5 shadow-2xl',
+            'my-auto flex max-h-[calc(100vh-2rem)] w-full flex-col rounded-2xl border shadow-2xl',
+            props.bodyOverflowVisible ? 'overflow-visible' : 'overflow-hidden',
             sizeClasses[size]
           ]"
+          :style="{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-color)' }"
         >
           <!-- Header -->
-          <div class="flex shrink-0 items-center justify-between px-6 py-4 border-b border-white/5">
+          <div class="flex shrink-0 items-center justify-between px-6 py-4 border-b" :style="{ borderColor: 'var(--border-color)' }">
             <h3 class="text-lg font-semibold text-[var(--text-primary)]">{{ title }}</h3>
             <button
               @click="$emit('close')"
-              class="p-2 rounded-lg hover:bg-white/5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              class="p-2 rounded-lg text-[var(--text-secondary)] transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]"
             >
               <X class="w-5 h-5" />
             </button>
           </div>
 
           <!-- Body -->
-          <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+          <div
+            :class="[
+              'min-h-0 flex-1 px-6 py-4',
+              props.bodyOverflowVisible ? 'overflow-visible' : 'overflow-y-auto'
+            ]"
+          >
             <slot />
           </div>
 
           <!-- Footer -->
-          <div v-if="$slots.footer" class="flex shrink-0 justify-end gap-3 border-t border-white/5 px-6 py-4">
+          <div
+            v-if="$slots.footer"
+            class="flex shrink-0 justify-end gap-3 border-t px-6 py-4"
+            :style="{ borderColor: 'var(--border-color)' }"
+          >
             <slot name="footer" />
           </div>
         </div>

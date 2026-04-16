@@ -32,8 +32,8 @@ const classes = computed(() => {
 
   const variants = {
     primary: 'btn-gradient text-white shadow-lg shadow-accent/25 hover:shadow-accent/40',
-    secondary: 'bg-white/5 border border-white/10 text-[var(--text-primary)] hover:bg-white/10',
-    ghost: 'bg-transparent text-[var(--text-primary)] hover:bg-white/5',
+    secondary: 'border border-[var(--border-color)] bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:border-accent/30 hover:bg-[var(--accent-soft)]',
+    ghost: 'bg-transparent text-[var(--text-primary)] hover:bg-[var(--accent-soft)]',
     danger: 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
   }
 

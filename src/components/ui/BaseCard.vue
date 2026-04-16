@@ -22,7 +22,7 @@ const paddingClasses = {
 <template>
   <div
     :class="[
-      'bg-[var(--bg-secondary)] rounded-2xl border border-white/5',
+      'surface-panel rounded-2xl',
       paddingClasses[padding],
       hoverable ? 'card-hover cursor-pointer' : ''
     ]"
