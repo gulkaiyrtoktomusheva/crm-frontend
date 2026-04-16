@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { subjectsApi } from '@/api/subjects'
 import { usersApi } from '@/api/users'
@@ -38,7 +38,7 @@ const form = ref({
   teacherId: null
 })
 
-onMounted(async () => {
+async function fetchOptions() {
   try {
     const [subjectsResponse, usersResponse] = await Promise.all([
       subjectsApi.getAll(),
@@ -50,10 +50,12 @@ onMounted(async () => {
     subjects.value = []
     teachers.value = []
   }
-})
+}
 
 watch(() => props.show, (open) => {
   if (!open) return
+
+  fetchOptions()
 
   if (props.courseSubject) {
     form.value = {

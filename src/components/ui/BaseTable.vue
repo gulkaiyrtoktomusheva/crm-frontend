@@ -4,6 +4,14 @@ defineProps({
     type: Array,
     required: true
   },
+  tableClass: {
+    type: String,
+    default: ''
+  },
+  tableLayout: {
+    type: String,
+    default: 'fixed'
+  },
   data: {
     type: Array,
     default: () => []
@@ -21,7 +29,7 @@ defineProps({
 
 <template>
   <div class="overflow-x-auto">
-    <table class="w-full table-fixed">
+    <table :class="['w-full', tableLayout === 'auto' ? 'table-auto' : 'table-fixed', tableClass]">
       <thead>
         <tr class="bg-[var(--bg-tertiary)]">
           <th

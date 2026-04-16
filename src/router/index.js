@@ -55,18 +55,6 @@ const routes = [
         meta: { title: 'Enrollments', requiredPermission: 'STUDENT_VIEW' }
       },
       {
-        path: 'groups',
-        name: 'groups',
-        component: () => import('@/views/groups/GroupsView.vue'),
-        meta: { title: 'Groups', requiredPermission: 'GROUP_VIEW' }
-      },
-      {
-        path: 'groups/:id',
-        name: 'group-detail',
-        component: () => import('@/views/groups/GroupDetailView.vue'),
-        meta: { title: 'Group Details', requiredPermission: 'GROUP_VIEW' }
-      },
-      {
         path: 'mock-exams',
         name: 'mock-exams',
         component: () => import('@/views/mockExams/MockExamsView.vue'),

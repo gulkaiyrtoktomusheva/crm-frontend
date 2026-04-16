@@ -26,11 +26,11 @@ const modalLoading = ref(false)
 const editingCourse = ref(null)
 
 const columns = computed(() => [
-  { key: 'course', label: t('courses.course'), width: '36%' },
-  { key: 'period', label: t('courses.period'), width: '24%' },
-  { key: 'price', label: t('courses.price'), width: '18%' },
-  { key: 'status', label: t('courses.status'), width: '16%' },
-  { key: 'actions', label: '', width: '140px' }
+  { key: 'course', label: t('courses.course'), width: '320px' },
+  { key: 'period', label: t('courses.period'), width: '220px' },
+  { key: 'price', label: t('courses.price'), width: '160px' },
+  { key: 'status', label: t('courses.status'), width: '160px' },
+  { key: 'actions', label: '', width: '132px' }
 ])
 
 const filteredCourses = computed(() => {
@@ -171,47 +171,46 @@ async function handleDelete(course) {
         :data="filteredCourses"
         :loading="loading"
         :empty-text="t('courses.noCourses')"
+        table-layout="auto"
+        table-class="min-w-[1140px]"
       >
         <template #course="{ row }">
-          <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+          <div class="flex min-w-0 items-center gap-3">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
               <BookOpen class="h-5 w-5" />
             </div>
-            <div>
-              <p class="font-medium text-[var(--text-primary)]">{{ row.name }}</p>
+            <div class="min-w-0">
+              <p class="truncate font-medium text-[var(--text-primary)]">{{ row.name }}</p>
               <p class="text-xs text-[var(--text-secondary)]">{{ t('courses.course') }} #{{ row.id }}</p>
             </div>
           </div>
         </template>
 
         <template #period="{ row }">
-          <span class="text-[var(--text-secondary)]">
+          <span class="whitespace-nowrap text-[var(--text-secondary)]">
             {{ formatDate(row.startDate) }} - {{ formatDate(row.endDate) }}
           </span>
         </template>
 
         <template #price="{ row }">
-          <span class="font-medium text-[var(--text-primary)]">{{ formatCurrency(row.price) }}</span>
+          <span class="whitespace-nowrap font-medium text-[var(--text-primary)]">{{ formatCurrency(row.price) }}</span>
         </template>
 
         <template #status="{ row }">
-          <span class="text-[var(--text-secondary)]">{{ getStatusLabel(row.status) }}</span>
+          <span class="whitespace-nowrap text-[var(--text-secondary)]">{{ getStatusLabel(row.status) }}</span>
         </template>
 
         <template #actions="{ row }">
-          <div class="flex items-center justify-end gap-2">
-            <BaseButton variant="ghost" size="sm" @click="viewCourse(row)">
-              <Eye class="mr-1 h-4 w-4" />
-              {{ t('common.view') || 'View' }}
+          <div class="flex flex-wrap items-center justify-end gap-2">
+            <BaseButton variant="ghost" size="sm" icon @click="viewCourse(row)">
+              <Eye class="h-4 w-4" />
             </BaseButton>
-            <BaseButton v-if="canUpdate" variant="ghost" size="sm" @click="openEditModal(row)">
-              <Pencil class="mr-1 h-4 w-4" />
-              {{ t('common.edit') }}
+            <BaseButton v-if="canUpdate" variant="ghost" size="sm" icon @click="openEditModal(row)">
+              <Pencil class="h-4 w-4" />
             </BaseButton>
 
-            <BaseButton v-if="canDelete" variant="danger" size="sm" @click="handleDelete(row)">
-              <Trash2 class="mr-1 h-4 w-4" />
-              {{ t('common.delete') }}
+            <BaseButton v-if="canDelete" variant="danger" size="sm" icon @click="handleDelete(row)">
+              <Trash2 class="h-4 w-4" />
             </BaseButton>
           </div>
         </template>
